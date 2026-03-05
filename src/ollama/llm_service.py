@@ -150,25 +150,3 @@ DATOS:
         except Exception as e:
             logging.error(f"Error en la comunicación con Ollama: {str(e)}")
             return clinical_context, f"Error generando la síntesis clínica: Asegúrate de que Ollama está ejecutándose y el modelo '{self.model_name}' está descargado."
-
-
-# ==========================================
-# BLOQUE DE PRUEBAS LOCALES
-# ==========================================
-if __name__ == "__main__":
-    # Simulación de un output de la clase MedicalExtractor
-    mock_extractor_data = {
-        "Hb": {"valor": 7.5, "unidad": "g/dL", "rango_referencia": {"inf": 12.0, "sup": 16.0}, "ctcae": {"grado": 3, "etiqueta": "Low", "descripcion": "Anemia: Severa (<8.0 g/dL)"}},
-        "Plaquetas": {"valor": 30.0, "unidad": "x10^9/L", "rango_referencia": {"inf": 150.0, "sup": 400.0}, "ctcae": {"grado": 3, "etiqueta": "Low", "descripcion": "Trombocitopenia: Severa (25.0 - 50.0)"}},
-        "Creatinina": {"valor": 1.1, "unidad": "mg/dL", "rango_referencia": {"inf": 0.6, "sup": 1.1}, "ctcae": {"grado": 1, "etiqueta": "High", "descripcion": "Creatinina elevada: Leve (1.03 - 1.53)"}},
-        "Neutrófilos": {"valor": 2.5, "unidad": "x10^9/L", "rango_referencia": {"inf": 1.5, "sup": 7.5}, "ctcae": {"grado": 0, "etiqueta": "Normal", "descripcion": "Normal"}}
-    }
-    
-    
-    llm = LLMService(model_name="qwen2.5:latest") # Usa tu modelo local por defecto para la prueba
-    context, synthesis = llm.generate_synthesis(mock_extractor_data, method="Chain-of-Thought")
-    
-    print("\n=== CONTEXTO ENVIADO (SECCIÓN A y C) ===")
-    print(context)
-    print("\n=== RESPUESTA DEL SLM (SECCIÓN D) ===")
-    print(synthesis)
