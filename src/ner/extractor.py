@@ -3,7 +3,7 @@ import logging
 from typing import Dict, Any, Optional
 
 # Importamos los diccionarios de patrones y reglas 
-from patterns import PATRONES, REGLAS_CTCAE
+from .patterns import PATRONES, REGLAS_CTCAE
 
 # Configuración básica de logging 
 logging.basicConfig(level=logging.INFO, format='%(levelname)s: %(message)s')
