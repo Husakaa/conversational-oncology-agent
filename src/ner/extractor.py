@@ -3,7 +3,7 @@ import logging
 from typing import Dict, Any, Optional
 
 # Importamos los diccionarios de patrones y reglas 
-from patterns import patrones, REGLAS_CTCAE
+from patterns import PATRONES, REGLAS_CTCAE
 
 # Configuración básica de logging 
 logging.basicConfig(level=logging.INFO, format='%(levelname)s: %(message)s')
@@ -15,7 +15,7 @@ class MedicalExtractor:
     """
 
     def __init__(self):
-        self.patrones = patrones
+        self.patrones = PATRONES
         self.reglas_ctcae = REGLAS_CTCAE
         
         # Mapea la clave del diccionario 'patrones' a la clave del diccionario 'REGLAS_CTCAE'

@@ -42,7 +42,7 @@ pat_ph = re.compile(r"[pP]H[\s\S]*?(?P<valor>\d+(?:[.,]\d+)?)(?:.*?(?P<unidad>[a
 
 
 # --- Diccionario estructurado de patrones --- #
-patrones = {
+PATRONES = {
     # Hematología
     'Hb': pat_hb,
     'Plaquetas': pat_plaquetas,
