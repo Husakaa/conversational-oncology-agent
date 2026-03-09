@@ -18,7 +18,7 @@ class MedicalExtractor:
         self.patrones = PATRONES
         self.reglas_ctcae = REGLAS_CTCAE
         
-        # Mapea la clave del diccionario 'patrones' a la clave del diccionario 'REGLAS_CTCAE'
+        # Mapea la clave del diccionario 'PATRONES' a la clave del diccionario 'REGLAS_CTCAE'
         self.mapa_nombres = {
             'Hb': 'Hemoglobina',
             'Plaquetas': 'Plaquetas',
