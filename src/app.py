@@ -1,8 +1,9 @@
 import streamlit as st
 import requests
 
-# Ruta URL de la API
-API_URL = "http://127.0.0.1:8000/api/v1/analizar"
+# Rutas URL de la API separadas
+URL_EXTRACT = "http://127.0.0.1:8000/api/v1/extract"
+URL_SYNTHESIZE = "http://127.0.0.1:8000/api/v1/synthesize"
 
 st.title("Agente Conversacional Oncologico")
 
@@ -22,21 +23,24 @@ with st.sidebar:
         st.header("Herramientas")
         
         if st.button("Extraer entidades"):
-            payload = {"texto_clinico": texto_analitica, "metodologia_prompt": "Zero-Shot"} # Problema de diseño: debo dividir las rutas para evitar llamadas inncesarias a ollama
-            response = requests.post(API_URL, json=payload).json()
-            resultado = str(response["datos_estructurados"])
+            payload = {"texto_clinico": texto_analitica} 
+            # Llamamos solo al motor Regex
+            response = requests.post(URL_EXTRACT, json=payload).json()
+            resultado = str(response.get("datos_estructurados", "Error en extracción"))
             st.session_state.messages.append({"role": "assistant", "content": resultado})
 
         if st.button("Resumen rápido"):
             payload = {"texto_clinico": texto_analitica, "metodologia_prompt": "Zero-Shot"}
-            response = requests.post(API_URL, json=payload).json()
-            resultado = response["contexto_generado"].split("\n\n")[0]
+            # Llamamos a Ollama
+            response = requests.post(URL_SYNTHESIZE, json=payload).json()
+            resultado = response.get("contexto_generado", "").split("\n\n")[0]
             st.session_state.messages.append({"role": "assistant", "content": resultado})
 
         if st.button("Informe completo"):
             payload = {"texto_clinico": texto_analitica, "metodologia_prompt": "CoT"}
-            response = requests.post(API_URL, json=payload).json()
-            resultado = response["sintesis_clinica"]
+            # Llamamos a Ollama
+            response = requests.post(URL_SYNTHESIZE, json=payload).json()
+            resultado = response.get("sintesis_clinica", "Error en síntesis")
             st.session_state.messages.append({"role": "assistant", "content": resultado})
 
 # Mostrar mensajes del historial
