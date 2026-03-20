@@ -4,6 +4,7 @@ import requests
 # Rutas URL de la API separadas
 URL_EXTRACT = "http://127.0.0.1:8000/api/v1/extract"
 URL_SYNTHESIZE = "http://127.0.0.1:8000/api/v1/synthesize"
+URL_CONSULT = "http://127.0.0.1:8000/api/v1/consult"
 
 st.title("Agente Conversacional Oncologico")
 
@@ -49,13 +50,27 @@ for message in st.session_state.messages:
         st.write(message["content"])
 
 # Entrada de chat para lenguaje natural
-if prompt := st.chat_input("Escriba su consulta"):
-    st.session_state.messages.append({"role": "user", "content": prompt})
+if consult := st.chat_input("Escriba su consulta"):
+    st.session_state.messages.append({"role": "user", "content": consult})
     with st.chat_message("user"):
-        st.write(prompt)
+        st.write(consult)
 
-    # Respuesta del modelo (simulada en este prototipo)
+    # Respuesta del modelo 
     with st.chat_message("assistant"):
-        respuesta = "Respuesta del modelo basada en su consulta: " + prompt
-        st.write(respuesta)
-        st.session_state.messages.append({"role": "assistant", "content": respuesta})
+        payload = {"consulta": consult} 
+        
+        try:
+            # Llamamos a Ollama
+            response = requests.post(URL_CONSULT, json=payload)
+            response.raise_for_status() 
+            
+            respuesta = response.json().get("respuesta", "Error leyendo respuesta del backend.")
+            
+            st.session_state.messages.append({"role": "assistant", "content": respuesta})
+            st.write(respuesta)
+            
+        except requests.exceptions.ConnectionError:
+            st.error("Error de conexión: El servidor FastAPI no está corriendo.")
+        except requests.exceptions.RequestException as e:
+            st.error(f"Error en la petición: {e}")
+        

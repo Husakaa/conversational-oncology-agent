@@ -1,7 +1,7 @@
 from fastapi import APIRouter, HTTPException
 import logging
 
-from .models import ExtractRequest, SynthesisRequest, ExtractResponse, SynthesisResponse
+from .models import ExtractRequest, SynthesisRequest, ExtractResponse, SynthesisResponse, ConsultRequest, ConsultResponse
 from src.ner.extractor import MedicalExtractor
 from src.ollama.llm_service import LLMService
 
@@ -10,7 +10,7 @@ router = APIRouter()
 
 # Instanciamos los motores para no cargarlos con cada petición
 extractor = MedicalExtractor()
-llm_service = LLMService(model_name="qwen-oncologo") 
+llm_service = LLMService() 
 
 
 @router.post("/extract", response_model=ExtractResponse)
@@ -60,4 +60,13 @@ async def generate_report(request: SynthesisRequest):
         contexto_generado= contexto,
         sintesis_clinica= sintesis
     )
+
+@router.post("/consult", response_model=ConsultResponse)
+async def generate_response(request: ConsultRequest):
+    consulta = request.consulta
+    respuesta = llm_service.generate_response(consult=consulta)
+    return ConsultResponse(
+        respuesta=respuesta
+    )
+
     

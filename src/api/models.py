@@ -27,3 +27,11 @@ class SynthesisResponse(BaseModel):
     status: str = "success"
     contexto_generado: str
     sintesis_clinica: str
+
+class ConsultRequest(BaseModel):
+    """Esquema de validación para consulta a Ollama"""
+    consulta: str
+
+class ConsultResponse(BaseModel):
+    """Esquema de respuesta para respuesta de Ollama"""
+    respuesta: str
