@@ -1,9 +1,8 @@
 import streamlit as st
 import requests
+import time
 
-from src.ui.formatters import ner_to_markdown
-from src.ui.formatters import quick_summary
-from src.ui.formatters import clinical_context
+from src.ui.formatters import ner_to_markdown, quick_summary, clinical_context
 
 
 # Rutas URL de la API separadas
@@ -55,16 +54,26 @@ with st.sidebar:
             try:
                 # Feedback visual porque Ollama tarda en responder
                 with st.spinner("🧠 Generando síntesis clínica con BioMistral..."):
+                    # Iniciamos cronómetro justo antes de llamar a la API
+                    inicio = time.time()
                     # Llamamos a Ollama
                     response = requests.post(URL_SYNTHESIZE, json=payload)
                     
                     if not response.ok:
                         st.error(f"Error del backend: {response.text}")
                         response.raise_for_status()
+                    
+                    # Paramos el cronómetro al recibir la respuesta
+                    fin = time.time()
+                    tiempo_total = fin - inicio
+
                     # Extraemos síntesis
                     resultado = response.json().get("sintesis_clinica", "Error leyendo la síntesis.")
+
+                    # Formateamos el resultado añadiendo el tiempo
+                    resultado_con_tiempo = f"{resultado}\n\n---\n*Pensó durante {tiempo_total:.2f}s*"
                     
-                    st.session_state.messages.append({"role": "assistant", "content": resultado})
+                    st.session_state.messages.append({"role": "assistant", "content": resultado_con_tiempo})
             
             except requests.exceptions.ConnectionError:
                 st.error("Error de conexión: El servidor FastAPI no está corriendo.")
