@@ -60,12 +60,17 @@ El evento limitante de dosis es la elevación de GGT Grado 2, que junto a la ele
     {context}
     OUTPUT SECCIÓN D:"""
             elif methodology == "CoT":
-                return f"""Eres un oncólogo experto. Realiza un análisis clínico exhaustivo siguiendo estos pasos:
-    PASO 1: Analiza cada valor alterado individualmente y su grado de toxicidad.
-    PASO 2: Explica la fisiopatología conjunta (qué está pasando en el cuerpo del paciente).
-    PASO 3: Redacta una conclusión formal para la 'SECCIÓN D: SÍNTESIS CLÍNICA Y EVOLUCIÓN 📊'.
-    IMPORTANTE: No seas breve. Justifica tus conclusiones basándote en los datos.
-    DATOS:
+                return f"""Eres un oncólogo clínico experto redactando la evolución en una historia clínica.
+    Analiza la fisiopatología conjunta de las toxicidades detectadas y redacta una síntesis clínica profesional.
+
+    REGLAS ESTRICTAS DE FORMATO:
+        1. NO inventes NINGÚN dato del paciente (ni edad, ni sexo, ni diagnóstico, ni tratamientos previos). No sabes quién es.
+        2. Básate EXCLUSIVAMENTE en los resultados de laboratorio proporcionados.
+        3. NO uses viñetas, ni palabras como "Paso 1", "Paso 2", "Análisis individual" o "Conclusión".
+        4. Escribe un único texto narrativo (prosa médica) conectando los hallazgos de forma lógica.
+        5. Tu respuesta DEBE empezar directamente por 'SECCIÓN D: SÍNTESIS CLÍNICA Y EVOLUCIÓN 📊'.
+
+    DATOS DEL PACIENTE:
     {context}"""
             else:
                 raise ValueError(f"Metodología '{methodology}' no soportada.")
