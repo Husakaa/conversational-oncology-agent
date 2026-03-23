@@ -1,6 +1,8 @@
 import streamlit as st
 import requests
 
+from src.ui.formatters import ner_to_markdown
+
 # Rutas URL de la API separadas
 URL_EXTRACT = "http://127.0.0.1:8000/api/v1/extract"
 URL_SYNTHESIZE = "http://127.0.0.1:8000/api/v1/synthesize"
@@ -24,11 +26,14 @@ with st.sidebar:
         st.header("Herramientas")
         
         if st.button("Extraer entidades"):
-            payload = {"texto_clinico": texto_analitica} 
+            payload = {"texto_clinico": texto_analitica}
             # Llamamos solo al motor Regex
-            response = requests.post(URL_EXTRACT, json=payload).json()
-            resultado = str(response.get("datos_estructurados", "Error en extracción"))
-            st.session_state.messages.append({"role": "assistant", "content": resultado})
+            response = requests.post(URL_EXTRACT, json=payload)
+            response.raise_for_status()
+            datos_json = response.json().get("datos_estructurados", {})
+            # Usamos el formateador 
+            resultado_limpio = ner_to_markdown(datos_json)
+            st.session_state.messages.append({"role": "assistant", "content": resultado_limpio})
 
         if st.button("Resumen rápido"):
             payload = {"texto_clinico": texto_analitica, "metodologia_prompt": "Zero-Shot"}
