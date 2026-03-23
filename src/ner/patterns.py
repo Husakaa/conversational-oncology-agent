@@ -121,12 +121,13 @@ REGLAS_CTCAE = {
     },
     'Linfocitos': {
         'Low': {
-            'desc_base': 'Linfopenia CD4',
+            'desc_base': 'Linfopenia',
             'reglas': [
-                (4, lambda x: x < 50.0, "Amenaza vital (<50)"),
-                (3, lambda x: 50.0 <= x < 200.0, "Severa (50 - 199)"),
-                (2, lambda x: 200.0 <= x < 300.0, "Moderada (200 - 299)"),
-                (1, lambda x: 300.0 <= x < 409.0, "Leve (300 - 409)")
+                # Escala en 10³/μL (o 10⁹/L). Normal suele ser > 1.0
+                (4, lambda x: x < 0.2, "Amenaza vital (<0.2 x 10³/μL)"),
+                (3, lambda x: 0.2 <= x < 0.5, "Severa (0.2 - 0.5 x 10³/μL)"),
+                (2, lambda x: 0.5 <= x < 0.8, "Moderada (0.5 - 0.8 x 10³/μL)"),
+                (1, lambda x: 0.8 <= x < 1.0, "Leve (0.8 - 1.0 x 10³/μL)")
             ]
         }
     },
