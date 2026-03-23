@@ -71,8 +71,8 @@ El evento limitante de dosis es la elevación de GGT Grado 2, que junto a la ele
                 raise ValueError(f"Metodología '{methodology}' no soportada.")
 
     def generate_synthesis(self, extracted_data: Dict[str, Any], method: str = "CoT") -> Tuple[str, str]:
-        clinical_context = clinical_context(extracted_data)
-        prompt_final = self._build_prompt(method, clinical_context)
+        context = clinical_context(extracted_data)
+        prompt_final = self._build_prompt(method, context)
         logging.info(f"Lanzando inferencia a Ollama (Modelo: {self.models['qwen-oncologo']} | Método: {method})")
         try:
             response = ollama.chat(
@@ -80,10 +80,10 @@ El evento limitante de dosis es la elevación de GGT Grado 2, que junto a la ele
                 messages=[{'role': 'user', 'content': prompt_final}],
                 options=self.options_qwen
             )
-            return clinical_context, response['message']['content']
+            return context, response['message']['content']
         except Exception as e:
             logging.error(f"Error en la comunicación con Ollama: {str(e)}")
-            return clinical_context, f"Error generando la síntesis clínica: Asegúrate de que Ollama está ejecutándose y el modelo '{self.models['qwen-oncologo']}' está descargado."
+            return context, f"Error generando la síntesis clínica: Asegúrate de que Ollama está ejecutándose y el modelo '{self.models['qwen-oncologo']}' está descargado."
 
     def generate_response(self, consult: str, method: str = "Zero-Shot") -> str:
         prompt = self._build_prompt(methodology=method, context=consult, consult=True)

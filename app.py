@@ -51,10 +51,25 @@ with st.sidebar:
 
         if st.button("Informe completo"):
             payload = {"texto_clinico": texto_analitica, "metodologia_prompt": "CoT"}
-            # Llamamos a Ollama
-            response = requests.post(URL_SYNTHESIZE, json=payload).json()
-            resultado = response.get("sintesis_clinica", "Error en síntesis")
-            st.session_state.messages.append({"role": "assistant", "content": resultado})
+            
+            try:
+                # Feedback visual porque Ollama tarda en responder
+                with st.spinner("🧠 Generando síntesis clínica con BioMistral..."):
+                    # Llamamos a Ollama
+                    response = requests.post(URL_SYNTHESIZE, json=payload)
+                    
+                    if not response.ok:
+                        st.error(f"Error del backend: {response.text}")
+                        response.raise_for_status()
+                    # Extraemos síntesis
+                    resultado = response.json().get("sintesis_clinica", "Error leyendo la síntesis.")
+                    
+                    st.session_state.messages.append({"role": "assistant", "content": resultado})
+            
+            except requests.exceptions.ConnectionError:
+                st.error("Error de conexión: El servidor FastAPI no está corriendo.")
+            except Exception as e:
+                st.error(f"Error en la petición: {e}")
 
 # Mostrar mensajes del historial
 for message in st.session_state.messages:
