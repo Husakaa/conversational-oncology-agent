@@ -2,6 +2,9 @@ import streamlit as st
 import requests
 
 from src.ui.formatters import ner_to_markdown
+from src.ui.formatters import quick_summary
+from src.ui.formatters import clinical_context
+
 
 # Rutas URL de la API separadas
 URL_EXTRACT = "http://127.0.0.1:8000/api/v1/extract"
@@ -36,11 +39,15 @@ with st.sidebar:
             st.session_state.messages.append({"role": "assistant", "content": resultado_limpio})
 
         if st.button("Resumen rápido"):
-            payload = {"texto_clinico": texto_analitica, "metodologia_prompt": "Zero-Shot"}
-            # Llamamos a Ollama
-            response = requests.post(URL_SYNTHESIZE, json=payload).json()
-            resultado = response.get("contexto_generado", "").split("\n\n")[0]
-            st.session_state.messages.append({"role": "assistant", "content": resultado})
+            payload = {"texto_clinico": texto_analitica}
+            # Llamamos al motor Regex 
+            response = requests.post(URL_EXTRACT, json=payload)
+            response.raise_for_status()    
+            # Extraemos el JSON
+            datos_json = response.json().get("datos_estructurados", {})
+            # Generamos la línea clínica 
+            resultado_resumen = quick_summary(datos_json)
+            st.session_state.messages.append({"role": "assistant", "content": resultado_resumen})
 
         if st.button("Informe completo"):
             payload = {"texto_clinico": texto_analitica, "metodologia_prompt": "CoT"}
