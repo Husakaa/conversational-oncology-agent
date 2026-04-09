@@ -14,11 +14,11 @@ class LLMService:
             "biomistral-oncologo": "biomistral-oncologo"
         }
         self.options_qwen = {
-            'temperature': 0.0,
-            'top_k': 10,
-            'top_p': 0.1,
-            'num_ctx': 8192,
-            'num_predict': 2048
+            'temperature': 0.3,
+            'top_k': 20,
+            'top_p': 0.9,
+            'num_ctx': 4096,
+            'num_predict': 512
         }
         self.ejemplo_fs_input = """[Fecha no especificada]: Hb: 14.5 | Plaquetas: 147 | Neutrófilos: 3.41 | Creatinina: 0.50 | GGT: 297 | ALT: 83 | resto bien.
 
@@ -72,10 +72,33 @@ El evento limitante de dosis es la elevación de GGT Grado 2, que junto a la ele
 
     DATOS DEL PACIENTE:
     {context}"""
+            elif methodology == "CoT+FS":
+                return f"""Eres un oncólogo clínico experto. Tu tarea es analizar la fisiopatología conjunta de las toxicidades y redactar una síntesis profesional siguiendo estrictamente el estilo narrativo del ejemplo.
+
+    EJEMPLO DE REFERENCIA (ESTILO Y TONO):
+    INPUT:
+    {self.ejemplo_fs_input}
+    OUTPUT:
+    {self.ejemplo_fs_output}
+
+    REGLAS ESTRICTAS DE SEGURIDAD Y FORMATO:
+    1. NO inventes ningún dato (edad, sexo, diagnóstico o fármacos). Si no está en el INPUT, no existe.
+    2. NO incluyas el proceso de pensamiento ("Paso 1", "Paso 2") en la respuesta final.
+    3. Escribe un texto único en prosa médica, sin viñetas ni etiquetas de sección internas.
+    4. La respuesta DEBE empezar directamente con 'SECCIÓN D: SÍNTESIS CLÍNICA Y EVOLUCIÓN 📊'.
+    5. Usa un tono analítico, conectando cómo una alteración puede influir en otra.
+    6. INDEPENDENCIA DEL EJEMPLO: Usa el EJEMPLO DE REFERENCIA solo para aprender el tono y la estructura. 
+
+    TAREA ACTUAL:
+    INPUT:
+    {context}
+
+    INSTRUCCIÓN FINAL: Redacta ahora el informe. Empieza tu respuesta exactamente con la frase 'SECCIÓN D: SÍNTESIS CLÍNICA Y EVOLUCIÓN 📊' y continúa con la prosa médica."""
+
             else:
                 raise ValueError(f"Metodología '{methodology}' no soportada.")
 
-    def generate_synthesis(self, extracted_data: Dict[str, Any], method: str = "CoT") -> Tuple[str, str]:
+    def generate_synthesis(self, extracted_data: Dict[str, Any], method: str = "CoT+FS") -> Tuple[str, str]:
         context = clinical_context(extracted_data)
         prompt_final = self._build_prompt(method, context)
         logging.info(f"Lanzando inferencia a Ollama (Modelo: {self.models['qwen-oncologo']} | Método: {method})")

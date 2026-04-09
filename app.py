@@ -49,11 +49,11 @@ with st.sidebar:
             st.session_state.messages.append({"role": "assistant", "content": resultado_resumen})
 
         if st.button("Informe completo"):
-            payload = {"texto_clinico": texto_analitica, "metodologia_prompt": "CoT"}
+            payload = {"texto_clinico": texto_analitica, "metodologia_prompt": "CoT+FS"}
             
             try:
                 # Feedback visual porque Ollama tarda en responder
-                with st.spinner("🧠 Generando síntesis clínica con Qwen2.5..."):
+                with st.spinner("🧠 Generando síntesis clínica con Qwen3.5..."):
                     # Iniciamos cronómetro justo antes de llamar a la API
                     inicio = time.time()
                     # Llamamos a Ollama

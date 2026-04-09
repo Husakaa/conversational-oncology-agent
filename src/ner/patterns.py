@@ -112,10 +112,10 @@ REGLAS_CTCAE = {
         'Low': {
             'desc_base': 'Neutropenia',
             'reglas': [
-                (4, lambda x: x < 0.5, "Amenaza vital (<0.5 x 10⁹/L)"),
-                (3, lambda x: 0.5 <= x < 1.0, "Severa (0.5 - 1.0 x 10⁹/L)"),
-                (2, lambda x: 1.0 <= x < 1.5, "Moderada (1.0 - 1.5 x 10⁹/L)"),
-                (1, lambda x: 1.5 <= x < 1.8, "Leve (1.5 - 1.8 x 10⁹/L)")
+                (4, lambda x: x < 0.5, "Amenaza vital (<0.5)"),
+                (3, lambda x: 0.5 <= x < 1.0, "Severa (0.5 - 0.9)"),
+                (2, lambda x: 1.0 <= x < 1.5, "Moderada (1.0 - 1.4)"),
+                (1, lambda x: 1.5 <= x < 1.8, "Leve (1.5 - 1.7)")
             ]
         }
     },
