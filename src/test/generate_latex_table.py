@@ -37,30 +37,25 @@ def generar_tabla():
 
     # 4. Construcción de la tabla LaTeX
     latex_table = r"""
-\begin{table}[htbp]
-\centering
 \begin{tabular}{@{}lllc@{}}
 \toprule
-\textbf{Fase del Pipeline} & \textbf{Tecnología / Modelo} & \textbf{Métrica de Evaluación} & \textbf{Resultado} \\ \midrule
+\textbf{Fase del Pipeline} & \textbf{Tecnología} & \textbf{Métrica de Evaluación} & \textbf{Resultado} \\ \midrule
 
-% FASE NER
-\multirow{3}{*}{NER} & \multirow{3}{*}{Motor Regex (CTCAE)} & Precisión Global & """ + f"{p_ner:.4f}" + r""" \\
+% BLOQUE 1: EXTRACCIÓN
+\multirow{3}{*}{1. Extracción} & \multirow{3}{*}{Motor Regex} & Precisión Global & """ + f"{p_ner:.4f}" + r""" \\
  & & Recall Global & """ + f"{r_ner:.4f}" + r""" \\
  & & F1-Score & """ + f"{f_ner:.4f}" + r""" \\ \midrule
 
-% FASE SÍNTESIS
-\multirow{3}{*}{Síntesis Clínica} & \multirow{3}{*}{Qwen 2.5 (7B)} & Latencia Media & """ + f"{q_mean:.2f} s" + r""" \\
+% BLOQUE 2: SÍNTESIS
+\multirow{3}{*}{2. Síntesis Clínica} & \multirow{3}{*}{Qwen 2.5 (7B)} & Latencia Media & """ + f"{q_mean:.2f} s" + r""" \\
  & & Latencia P95 & """ + f"{q_p95:.2f} s" + r""" \\
- & & Calidad Media (Likert) & """ + f"{q_qual:.1f} / 5.0" + r""" \\ \midrule
+ & & Calidad Media & """ + f"{q_qual:.1f} / 5.0" + r""" \\ \midrule
 
 % FASE CONSULTA
-\multirow{3}{*}{Consulta (Chat)} & \multirow{3}{*}{BioMistral (7B)} & Latencia Media & """ + f"{b_mean:.2f} s" + r""" \\
+\multirow{3}{*}{3. Consulta} & \multirow{3}{*}{BioMistral (7B)} & Latencia Media & """ + f"{b_mean:.2f} s" + r""" \\
  & & Latencia P95 & """ + f"{b_p95:.2f} s" + r""" \\
- & & Calidad Media (Likert) & """ + f"{b_qual:.1f} / 5.0" + r""" \\ \bottomrule
+ & & Calidad Media & """ + f"{b_qual:.1f} / 5.0" + r""" \\ \bottomrule
 \end{tabular}
-\caption{Resumen de resultados consolidados de la arquitectura híbrida (VRAM: 6GB).}
-\label{tab:resumen_final}
-\end{table}
 """
 
     with open('output/tabla_resumen.tex', 'w', encoding='utf-8') as f:
