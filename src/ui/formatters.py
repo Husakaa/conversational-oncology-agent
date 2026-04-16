@@ -1,18 +1,17 @@
 from typing import Dict, Any
 from datetime import datetime
 
-def ner_to_markdown(datos_estructurados: Dict[str, Any]) -> str:
+import pandas as pd
+from typing import Dict, Any
+
+def ner_to_dataframe(datos_estructurados: Dict[str, Any]) -> pd.DataFrame:
     """
-    Convierte el diccionario del motor NER en una tabla Markdown estructurada.
+    Convierte el diccionario del motor NER en un DataFrame de Pandas estructurado.
     """
     if not datos_estructurados or not isinstance(datos_estructurados, dict):
-        return "No se detectaron biomarcadores válidos."
+        return pd.DataFrame() # Devuelve un df vacío
 
-    # Cabecera de la tabla
-    tabla = "### Resultados de Laboratorio Extraídos\n\n"
-    tabla += "| Biomarcador | Valor | Rango Ref. | CTCAE | Descripción |\n"
-    tabla += "|---|---|---|---|---|\n"
-
+    filas = []
     for bio, data in datos_estructurados.items():
         valor = f"{data.get('valor', '-')} {data.get('unidad', '')}"
         
@@ -22,27 +21,42 @@ def ner_to_markdown(datos_estructurados: Dict[str, Any]) -> str:
         rango_str = f"{inf if inf is not None else '-'} / {sup if sup is not None else '-'}"
 
         ctcae = data.get('ctcae', {})
-        grado = ctcae.get('grado', 0)
+        grado = int(ctcae.get('grado', 0))
         desc = ctcae.get('descripcion', 'Sin datos')
 
-        # Semáforo de toxicidad
-        if grado == 0:
-            semaforo = "🟢 G0"
-        elif grado == 1:
-            semaforo = "🟡 G1"
-            valor = f"**{valor}**"
+        # Usamos texto claro en lugar de solo iconos para que sea más "clínico"
+        grados = {0: "Normal", 1: "Leve (G1)", 2: "Moderado (G2)", 3: "Grave (G3)", 4: "Crítico (G4)"}
+        
+        filas.append({
+            "Biomarcador": bio,
+            "Valor Absoluto": valor,
+            "Rango Ref.": rango_str,
+            "Grado": grados.get(grado, "⚪ N/A"),
+            "Descripción Clínica": desc,
+            "_grado_num": grado # Columna oculta para lógica de colores
+        })
+
+    return pd.DataFrame(filas)
+
+def aplicar_estilo(df: pd.DataFrame):
+    """
+    Aplica colores de fondo a las filas basándose en la gravedad CTCAE.
+    """
+    def highlight_rows(row):
+        grado = row['_grado_num']
+        # Paleta de colores pastel 
+        if grado == 1:
+            color = 'background-color: rgba(255, 235, 59, 0.2)' # Amarillo suave
         elif grado == 2:
-            semaforo = "🟠 G2"
-            valor = f"**{valor}**"
+            color = 'background-color: rgba(255, 152, 0, 0.2)' # Naranja suave
         elif grado >= 3:
-            semaforo = "🔴 G3+"
-            valor = f"**{valor}**"
+            color = 'background-color: rgba(244, 67, 54, 0.3)' # Rojo suave
         else:
-            semaforo = "⚪ N/A"
+            color = ''
+        return [color] * len(row)
 
-        tabla += f"| **{bio}** | {valor} | {rango_str} | {semaforo} | {desc} |\n"
-
-    return tabla
+    # Aplicamos el color y ocultamos la columna técnica '_grado_num'
+    return df.style.apply(highlight_rows, axis=1).hide(subset=['_grado_num'], axis="columns")
 
 def quick_summary(datos_estructurados: Dict[str, Any], fecha: str = None) -> str:
     """
