@@ -18,3 +18,10 @@ env/
 
 # Jupyter Notebooks (archivos temporales)
 .ipynb_checkpoints/
+
+# Output
+output/
+
+# Analiticas
+analiticas/
+

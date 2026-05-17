@@ -139,3 +139,28 @@ def clinical_context(extracted_data: Dict[str, Any]) -> str:
 
     separador = "\n" + "-"*100 + "\n"
     return f"{linea_a}{separador}{seccion_c}"
+
+def biomarkers_to_markdown(datos_estructurados: Dict[str, Any]) -> str:
+    """
+    Convierte el diccionario del motor NER en una tabla Markdown para usar como
+    contexto clínico en el prompt de BioMistral.
+    """
+    if not datos_estructurados or not isinstance(datos_estructurados, dict):
+        return ""
+
+    grados = {0: "Normal", 1: "Leve (G1)", 2: "Moderado (G2)", 3: "Grave (G3)", 4: "Crítico (G4)"}
+
+    header = "| Biomarcador | Valor | Rango Ref. | Grado CTCAE | Descripción |\n"
+    separator = "|---|---|---|---|---|\n"
+    rows = []
+
+    for bio, data in datos_estructurados.items():
+        valor = f"{data.get('valor', '-')} {data.get('unidad', '')}".strip()
+        rango = data.get('rango_referencia', {})
+        rango_str = f"{rango.get('inf', '-')} - {rango.get('sup', '-')}"
+        ctcae = data.get('ctcae', {})
+        grado = int(ctcae.get('grado', 0))
+        desc = ctcae.get('descripcion', 'Sin datos')
+        rows.append(f"| {bio} | {valor} | {rango_str} | {grados.get(grado, 'N/A')} | {desc} |")
+
+    return header + separator + "\n".join(rows)

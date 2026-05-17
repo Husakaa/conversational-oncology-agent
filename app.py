@@ -7,7 +7,6 @@ from src.ui.formatters import ner_to_dataframe, aplicar_estilo, quick_summary, c
 # Analítica de ejemplo
 ANALITICA_EJEMPLO = """
 HEMATOLOGÍA:
-Leucocitos: 1.2 x10^3/µL [4.0 - 10.0]
 Neutrófilos abs: 0.45 x10^3/µL [1.5 - 7.5]
 Hemoglobina: 8.2 g/dL [13.0 - 17.0]
 Plaquetas: 85 x10^3/µL [150 - 450]
@@ -92,7 +91,7 @@ with st.sidebar:
             
             try:
                 # Feedback visual porque Ollama tarda en responder
-                with st.spinner("🧠 Generando síntesis clínica con Qwen2.5..."):
+                with st.spinner("🧠 Generando síntesis clínica con Qwen3-0.6B..."):
                     # Iniciamos cronómetro justo antes de llamar a la API
                     inicio = time.time()
                     # Llamamos a Ollama

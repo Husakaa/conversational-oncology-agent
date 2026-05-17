@@ -40,6 +40,15 @@ pat_fibrinogeno = re.compile(r"Fibrin[oó]geno[\s\S]*?(?P<valor>\d+(?:[.,]\d+)?)
 pat_inr = re.compile(r"INR[\s\S]*?(?P<valor>\d+(?:[.,]\d+)?)(?:.*?(?P<unidad>[a-zA-Z\d\^/µμ%]+))?(?:.*?\[?(?P<inferior>\d+(?:[.,]\d+)?)\s*-\s*(?P<superior>\d+(?:[.,]\d+)?)\]?)?", re.M | re.S)
 pat_ph = re.compile(r"[pP]H[\s\S]*?(?P<valor>\d+(?:[.,]\d+)?)(?:.*?(?P<unidad>[a-zA-Z\d\^/µμ%]+))?(?:.*?\[?(?P<inferior>\d+(?:[.,]\d+)?)\s*-\s*(?P<superior>\d+(?:[.,]\d+)?)\]?)?", re.M | re.S)
 
+pat_creatinina = re.compile(
+    r"Creati\s?nina[\s\S]*?" # 1. Identificador del biomarcador
+    r"(?P<valor>\d+(?:[.,]\d+)?)" # 2. Grupo de captura: Valor numérico
+    r"(?:.*?(?P<unidad>[a-zA-Z\d\^/µμ%]+))?" # 3. Grupo opcional: Unidad
+    r"(?:[\s\S]*?\[?(?P<inferior>\d+(?:[.,]\d+)?)" # 4a. Rango Ref: Límite inferior
+    r"\s*-\s*" # Separador de rango
+    r"(?P<superior>\d+(?:[.,]\d+)?)\]?)?", # 4b. Rango Ref: Límite superior
+    re.I
+)
 
 # --- Diccionario estructurado de patrones --- #
 PATRONES = {

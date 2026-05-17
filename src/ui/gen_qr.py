@@ -1,7 +1,8 @@
 import qrcode
 
 # Dirección IP de mi portátil
-url = "http://192.168.1.67:8501"
+#url = "http://192.168.1.67:8501"
+url = " https://agent-anymore-campbell-ancient.trycloudflare.com"
 
 # Configuración del QR
 qr = qrcode.QRCode(
