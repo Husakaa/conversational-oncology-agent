@@ -3,7 +3,7 @@ from typing import Dict, Any, Tuple
 import ollama
 
 from src.ui.formatters import clinical_context, biomarkers_to_markdown
-from src.config import OLLAMA_MODELS, QWEN25_OPTIONS, QWEN3_OPTIONS, GEMMA4_OPTIONS, BIOMISTRAL_OPTIONS
+from src.config import OLLAMA_MODELS, QWEN25_OPTIONS, QWEN3_OPTIONS, GEMMA4_OPTIONS, BIOMISTRAL_OPTIONS, MODEL_PROMPTS
 
 # Configuración básica de logging
 logging.basicConfig(level=logging.INFO, format='%(levelname)s: %(message)s')
@@ -16,96 +16,38 @@ class LLMService:
         self.options_gemma4 = GEMMA4_OPTIONS
         self.options_biomistral = BIOMISTRAL_OPTIONS
         self.last_biomarkers = None
-        self.ejemplo_fs_input = """[Fecha no especificada]: Hb: 14.5 | Plaquetas: 147 | Neutrófilos: 3.41 | Creatinina: 0.50 | GGT: 297 | ALT: 83 | resto bien.
-
-----------------------------------------------------------------------------------------------------
-
-SECCIÓN C: ESTRATIFICACIÓN DE TOXICIDAD (CTCAE v5.0) ⚠️
-    - GGT (297 U/L): Grado 2. Elevación GGT Moderada (214 - 425 U/L). (Ref: 5.0 - 40.0).
-    - ALT (83 U/L): Grado 1. Elevación ALT (GPT) Leve (41 - 120 U/L). (Ref: 3.0 - 40.0).
-    - FA (180 U/L): Grado 1. Elevación Fosfatasa Alc. Leve (117 - 291 U/L). (Ref: 35.0 - 104.0).
-    - AST (51 U/L): Grado 1. Elevación AST (GOT) Leve (41 - 120 U/L). (Ref: 3.0 - 40.0).
-    - LDH (274 U/L): Grado 0 (Normal). Nota: Resultado corregido estadísticamente por hemólisis. (Ref: 200.0 - 380.0)."""
-
-        self.ejemplo_fs_output = """SECCIÓN D: SÍNTESIS CLÍNICA Y EVOLUCIÓN 📊
-
-El evento limitante de dosis es la elevación de GGT Grado 2, que junto a la elevación leve de fosfatasa alcalina y transaminasas (G1), sugiere un perfil de colestasis o afectación biliar incipiente. Las series hematológicas (neutrófilos y plaquetas) y la función renal se encuentran preservadas dentro de rangos seguros. Se recomienda monitorizar el perfil hepático en el próximo ciclo y repetir la toma de LDH debido a la interferencia por hemólisis."""
 
 
-    def _build_prompt(self, methodology: str, context: str, consult: bool = False) -> str:
+    def _build_prompt(self, model_id: str, methodology: str, context: str, consult: bool = False) -> str:
+        model_prompts = MODEL_PROMPTS.get(model_id, MODEL_PROMPTS["default"])
         if consult:
+            prompt_template = model_prompts.get("consult", MODEL_PROMPTS["default"]["consult"])
             context_block = ""
             if self.last_biomarkers:
-                context_block = f"""\n\nRESULTADOS DE LABORATORIO DEL PACIENTE ACTUAL:\n{self.last_biomarkers}\n"""
-            return f"""Eres un oncólogo experto. Tienes un alto dominio del ámbito médico.
-             Vas a recibir consultas y debes contestar de forma altamente explicativa dando detalles.
-             Si se proporcionan resultados de laboratorio, úsalos como referencia para contextualizar tu respuesta.{context_block}
-             Consulta: {context}"""
+                context_block = f"\n\nRESULTADOS DE LABORATORIO DEL PACIENTE ACTUAL:\n{self.last_biomarkers}\n"
+            return prompt_template.format(context_block=context_block, context=context)
         else:
-            if methodology == "Zero-Shot":
-                return f"""Basado en estos resultados, redacta únicamente la 'SECCIÓN D: SÍNTESIS CLÍNICA Y EVOLUCIÓN 📊'.
-    RESULTADOS:
-    {context}
-    SECCIÓN D:"""
-            elif methodology == "Few-Shot":
-                return f"""Eres un oncólogo experto. Sigue el estilo del ejemplo para redactar la 'SECCIÓN D: SÍNTESIS CLÍNICA Y EVOLUCIÓN 📊'.
-    EJEMPLO:
-    INPUT:
-    {self.ejemplo_fs_input}
-    OUTPUT SECCIÓN D:
-    {self.ejemplo_fs_output}
-    TAREA ACTUAL:
-    INPUT:
-    {context}
-    OUTPUT SECCIÓN D:"""
-            elif methodology == "CoT":
-                return f"""Eres un oncólogo clínico experto redactando la evolución en una historia clínica.
-    Analiza la fisiopatología conjunta de las toxicidades detectadas y redacta una síntesis clínica profesional.
+            prompt_template = model_prompts.get(methodology)
+            if not prompt_template:
+                raise ValueError(f"Metodología '{methodology}' no soportada para el modelo '{model_id}'.")
+            return prompt_template.format(context=context)
 
-    REGLAS ESTRICTAS DE FORMATO:
-        1. NO inventes NINGÚN dato del paciente (ni edad, ni sexo, ni diagnóstico, ni tratamientos previos). No sabes quién es.
-        2. Básate EXCLUSIVAMENTE en los resultados de laboratorio proporcionados.
-        3. NO uses viñetas, ni palabras como "Paso 1", "Paso 2", "Análisis individual" o "Conclusión".
-        4. Escribe un único texto narrativo (prosa médica) conectando los hallazgos de forma lógica.
-        5. Tu respuesta DEBE empezar directamente por 'SECCIÓN D: SÍNTESIS CLÍNICA Y EVOLUCIÓN 📊'.
-
-    DATOS DEL PACIENTE:
-    {context}"""
-            elif methodology == "CoT+FS":
-                return f"""Eres un oncólogo clínico experto. Tu tarea es analizar la fisiopatología conjunta de las toxicidades y redactar una síntesis profesional siguiendo estrictamente el estilo narrativo del ejemplo.
-
-    EJEMPLO DE REFERENCIA (ESTILO Y TONO):
-    INPUT:
-    {self.ejemplo_fs_input}
-    OUTPUT:
-    {self.ejemplo_fs_output}
-
-    REGLAS ESTRICTAS DE SEGURIDAD Y FORMATO:
-    1. NO inventes ningún dato (edad, sexo, diagnóstico o fármacos). Si no está en el INPUT, no existe.
-    2. NO incluyas el proceso de pensamiento ("Paso 1", "Paso 2") en la respuesta final.
-    3. Escribe un texto único en prosa médica, sin viñetas ni etiquetas de sección internas.
-    4. La respuesta DEBE empezar directamente con 'SECCIÓN D: SÍNTESIS CLÍNICA Y EVOLUCIÓN 📊'.
-    5. Usa un tono analítico, conectando cómo una alteración puede influir en otra.
-    6. INDEPENDENCIA DEL EJEMPLO: Usa el EJEMPLO DE REFERENCIA solo para aprender el tono y la estructura. 
-
-    TAREA ACTUAL:
-    INPUT:
-    {context}
-
-    INSTRUCCIÓN FINAL: Redacta ahora el informe. Empieza tu respuesta exactamente con la frase 'SECCIÓN D: SÍNTESIS CLÍNICA Y EVOLUCIÓN 📊' y continúa con la prosa médica."""
-
-            else:
-                raise ValueError(f"Metodología '{methodology}' no soportada.")
-
-    def generate_synthesis(self, extracted_data: Dict[str, Any], method: str = "CoT+FS") -> Tuple[str, str]:
+    def generate_synthesis(self, extracted_data: Dict[str, Any], method: str = "CoT+FS", model_key: str = "qwen2.5-7B") -> Tuple[str, str]:
         context = clinical_context(extracted_data)
-        prompt_final = self._build_prompt(method, context)
-        logging.info(f"Lanzando inferencia a Ollama (Modelo: {self.models['qwen3-0.6B']} | Método: {method})")
+        model_id = self.models.get(model_key, model_key)
+        prompt_final = self._build_prompt(model_id, method, context)
+        logging.info(f"Lanzando inferencia a Ollama (Modelo: {model_id} | Método: {method})")
+        
+        options = self.options_qwen3
+        if model_key == "qwen2.5-7B": options = self.options_qwen25
+        elif model_key == "gemma4-nano-e2b": options = self.options_gemma4
+        elif model_key == "biomistral-7B": options = self.options_biomistral
+
         try:
             response = ollama.chat(
-                model=self.models["qwen3-0.6B"],
+                model=model_id,
                 messages=[{'role': 'user', 'content': prompt_final}],
-                options=self.options_qwen3
+                options=options
             )
             synthesis = response['message']['content']
             self.last_biomarkers = biomarkers_to_markdown(extracted_data)
@@ -113,18 +55,25 @@ El evento limitante de dosis es la elevación de GGT Grado 2, que junto a la ele
             return context, synthesis
         except Exception as e:
             logging.error(f"Error en la comunicación con Ollama: {str(e)}")
-            return context, f"Error generando la síntesis clínica: Asegúrate de que Ollama está ejecutándose y el modelo '{self.models['qwen3-0.6B']}' está descargado."
+            return context, f"Error generando la síntesis clínica: Asegúrate de que Ollama está ejecutándose y el modelo '{model_id}' está descargado."
 
-    def generate_response(self, consult: str, method: str = "Zero-Shot") -> str:
-        prompt = self._build_prompt(methodology=method, context=consult, consult=True)
-        logging.info(f"Lanzando consulta a Ollama (Modelo: {self.models['biomistral-oncologo']})")
+    def generate_response(self, consult: str, method: str = "Zero-Shot", model_key: str = "biomistral-7B") -> str:
+        model_id = self.models.get(model_key, "biomistral-oncologo")
+        prompt = self._build_prompt(model_id, methodology=method, context=consult, consult=True)
+        logging.info(f"Lanzando consulta a Ollama (Modelo: {model_id})")
+        
+        options = self.options_biomistral
+        if model_key == "qwen3-0.6B": options = self.options_qwen3
+        elif model_key == "qwen2.5-7B": options = self.options_qwen25
+        elif model_key == "gemma4-nano-e2b": options = self.options_gemma4
+
         try:
             response = ollama.chat(
-                model=self.models["biomistral-oncologo"],
+                model=model_id,
                 messages=[{'role': 'user', 'content': prompt}],
-                options=self.options_biomistral
+                options=options
             )
             return response['message']['content']
         except Exception as e:
             logging.error(f"Error en la comunicación con Ollama: {str(e)}")
-            return f"Error generando la respuesta: Asegúrate de que Ollama está ejecutándose y el modelo '{self.models['biomistral-oncologo']}' está descargado."
+            return f"Error generando la respuesta: Asegúrate de que Ollama está ejecutándose y el modelo '{model_id}' está descargado."

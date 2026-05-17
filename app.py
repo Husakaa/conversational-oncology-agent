@@ -91,7 +91,7 @@ with st.sidebar:
             
             try:
                 # Feedback visual porque Ollama tarda en responder
-                with st.spinner("🧠 Generando síntesis clínica con Qwen3-0.6B..."):
+                with st.spinner("🧠 Generando síntesis clínica con Qwen2.5-7B..."):
                     # Iniciamos cronómetro justo antes de llamar a la API
                     inicio = time.time()
                     # Llamamos a Ollama
