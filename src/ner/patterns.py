@@ -3,8 +3,12 @@ import re
 # --- Patrones Base --- #
 
 # Series hematológicas 
-pat_hb = re.compile(r"^-?Hemoglobina[\s\S]*?(?P<valor>\d+(?:[.,]\d+)?)(?:.*?(?P<unidad>[a-zA-Z\d\^/µμ%]+))?(?:[\s\S]*?\[?(?P<inferior>\d+(?:[.,]\d+)?)\s*-\s*(?P<superior>\d+(?:[.,]\d+)?)\]?)?", re.S | re.M | re.I)
-pat_plaquetas = re.compile(r"^-?Plaquetas[\s\S]*?(?P<valor>\d+)(?:.*?(?P<unidad>[a-zA-Z\d\^/µμ%]+))?(?:.*?\[?(?P<inferior>\d+(?:[.,]\d+)?)\s*-\s*(?P<superior>\d+(?:[.,]\d+)?)\]?)?", re.S | re.M | re.I)
+#pat_hb = re.compile(r"^-?(Hemoglobina|HB)[\s\S]*?(?P<valor>\d+(?:[.,]\d+)?)(?:.*?(?P<unidad>[a-zA-Z\d\^/µμ%]+))?(?:[\s\S]*?\[?(?P<inferior>\d+(?:[.,]\d+)?)\s*-\s*(?P<superior>\d+(?:[.,]\d+)?)\]?)?", re.S | re.M | re.I)
+# Patrón hemoglobina más flexible
+pat_hb = re.compile(r"-?(?:Hemoglobina|HB)\D*(?P<valor>\d+(?:[.,]\d+)?)(?:.*?(?P<unidad>[a-zA-Z\d\^/µμ%]+))?(?:.*?[([]\s*(?P<inferior>\d+(?:[.,]\d+)?)\s*-\s*(?P<superior>\d+(?:[.,]\d+)?)\s*[)\]])?", re.S | re.M | re.I)
+#pat_plaquetas = re.compile(r"^-?Plaquetas[\s\S]*?(?P<valor>\d+)(?:.*?(?P<unidad>[a-zA-Z\d\^/µμ%]+))?(?:.*?\[?(?P<inferior>\d+(?:[.,]\d+)?)\s*-\s*(?P<superior>\d+(?:[.,]\d+)?)\]?)?", re.S | re.M | re.I)
+pat_plaquetas = re.compile(r"-?Plaquetas\D*(?P<valor>\d+)(?:.*?(?P<unidad>[a-zA-Z\d\^/µμ%]+))?(?:.*?\[?(?P<inferior>\d+(?:[.,]\d+)?)\s*-\s*(?P<superior>\d+(?:[.,]\d+)?)\]?)?", re.S | re.M | re.I)
+
 pat_neutrofilos = re.compile(r"(:?Neutr[oó]fi\s?los|Neu)(?:(?!%).)*?(?P<valor>\d+(?:[.,]\d+)?)(?![.,\d])(?!\s*%)(?:.*?(?P<unidad>[a-zA-Z\d\^/µμ%]+))?[\s\S]*?(?:.*?\[?(?P<inferior>\d+(?:[.,]\d+)?)\s*-\s*(?P<superior>\d+(?:[.,]\d+)?)\]?)?", re.S | re.M | re.I)
 pat_linfocitos = re.compile(r"Linfocitos(?:(?!%).)*?(?P<valor>\d+(?:[.,]\d+)?)(?![.,\d])(?!\s*%)(?:.*?(?P<unidad>[a-zA-Z\d\^/µμ%]+))?[\s\S]*?(?:.*?\[?(?P<inferior>\d+(?:[.,]\d+)?)\s*-\s*(?P<superior>\d+(?:[.,]\d+)?)\]?)?", re.S | re.M | re.I)
 
@@ -16,13 +20,13 @@ pat_sodio = re.compile(r"Sodio.*?(?P<valor>\d+(?:[.,]\d+)?)(?:.*?(?P<unidad>[a-z
 pat_magnesio = re.compile(r"Magnesio.*?(?P<valor>\d+(?:[.,]\d+)?)(?:.*?(?P<unidad>[a-zA-Z\d\^/µμ%]+))?(?:.*?\[?(?P<inferior>\d+(?:[.,]\d+)?)\s*-\s*(?P<superior>\d+(?:[.,]\d+)?)\]?)?", re.I)
 
 # Perfil hepático y enzimas 
-pat_alt = re.compile(r"(:?Alanina amino\s?transferasa|ALA?T|GPT)[\s\S]*?(?P<valor>\d+(?:[.,]\d+)?)(?:.*?(?P<unidad>[a-zA-Z\d\^/µμ%]+))?(?:.*?\[?(?P<inferior>\d+(?:[.,]\d+)?)\s*-\s*(?P<superior>\d+(?:[.,]\d+)?)\]?)?", re.I)
-pat_ast = re.compile(r"(:?Aspartato amino\s?transferasa|ASA?T|GOT)[\s\S]*?(?P<valor>\d+(?:[.,]\d+)?)(?:.*?(?P<unidad>[a-zA-Z\d\^/µμ%]+))?(?:.*?\[?(?P<inferior>\d+(?:[.,]\d+)?)\s*-\s*(?P<superior>\d+(?:[.,]\d+)?)\]?)?", re.I)
+pat_alt = re.compile(r"(:?Alanina(amino)?\s?(transferasa|transaminasa)|ALA?T|GPT)[\s\S]*?(?P<valor>\d+(?:[.,]\d+)?)(?:.*?(?P<unidad>[a-zA-Z\d\^/µμ%]+))?(?:.*?\[?(?P<inferior>\d+(?:[.,]\d+)?)\s*-\s*(?P<superior>\d+(?:[.,]\d+)?)\]?)?", re.I)
+pat_ast = re.compile(r"(:?Aspartato(amino)?\s?(transferasa|transaminasa)|ASA?T|GOT)[\s\S]*?(?P<valor>\d+(?:[.,]\d+)?)(?:.*?(?P<unidad>[a-zA-Z\d\^/µμ%]+))?(?:.*?\[?(?P<inferior>\d+(?:[.,]\d+)?)\s*-\s*(?P<superior>\d+(?:[.,]\d+)?)\]?)?", re.I)
 pat_ldh = re.compile(r"(:?Lactato\s?deshidrogenasa|LDH)[\s\S]*?(?P<valor>\d+(?:[.,]\d+)?)(?:.*?(?P<unidad>[a-zA-Z\d\^/µμ%]+))?(?:.*?\[?(?P<inferior>\d+(?:[.,]\d+)?)\s*-\s*(?P<superior>\d+(?:[.,]\d+)?)\]?)?", re.I)
 pat_ggt = re.compile(r"(:?Gamma[- ]?(:?glutamiltransferasa|GT)|GGT)[\s\S]*?(?P<valor>\d+(?:[.,]\d+)?)(?:.*?(?P<unidad>[a-zA-Z\d\^/µμ%]+))?(?:.*?\[?(?P<inferior>\d+(?:[.,]\d+)?)\s*-\s*(?P<superior>\d+(?:[.,]\d+)?)\]?)?", re.I)
 pat_fa = re.compile(r"Fosfatasa alcalina[\s\S]*?(?P<valor>\d+(?:[.,]\d+)?)(?:.*?(?P<unidad>[a-zA-Z\d\^/µμ%]+))?(?:.*?\[?(?P<inferior>\d+(?:[.,]\d+)?)\s*-\s*(?P<superior>\d+(?:[.,]\d+)?)\]?)?", re.I)
 pat_bilirrubina = re.compile(r"Bilirrubina total[\s\S]*?(?P<valor>\d+(?:[.,]\d+)?)(?:.*?(?P<unidad>[a-zA-Z\d\^/µμ%]+))?(?:.*?\[?(?P<inferior>\d+(?:[.,]\d+)?)\s*-\s*(?P<superior>\d+(?:[.,]\d+)?)\]?)?", re.I)
-pat_albumina = re.compile(r"^Alb[úu]mina\s[\s\S]*?(?P<valor>\d+(?:[.,]\d+)?)(?:.*?(?P<unidad>[a-zA-Z\d\^/µμ%]+))?(?:.*?\[?(?P<inferior>\d+(?:[.,]\d+)?)\s*-\s*(?P<superior>\d+(?:[.,]\d+)?)\]?)?", re.I | re.M | re.S)
+pat_albumina = re.compile(r"Alb[úu]mina[\s\S]*?(?P<valor>\d+(?:[.,]\d+)?)(?:.*?(?P<unidad>[a-zA-Z\d\^/µμ%]+))?(?:.*?\[?(?P<inferior>\d+(?:[.,]\d+)?)\s*-\s*(?P<superior>\d+(?:[.,]\d+)?)\]?)?", re.I | re.M | re.S)
 pat_proteinas = re.compile(r"Prote[ií]nas? total(:?es)?[\s\S]*?(?P<valor>\d+(?:[.,]\d+)?)(?:.*?(?P<unidad>[a-zA-Z\d\^/µμ%]+))?(?:.*?\[?(?P<inferior>\d+(?:[.,]\d+)?)\s*-\s*(?P<superior>\d+(?:[.,]\d+)?)\]?)?", re.I | re.M | re.S)
 
 # Metabolismo, lípidos y páncreas 

@@ -254,6 +254,23 @@ def evaluar_lote(df_textos, lista_gold, nombre_lote):
         json.dump(metricas_ner, f, indent=4)
     print(f"[{nombre_lote}] Métricas guardadas en '{ruta_json}'")
 
+    # Extraer casos donde falló el motor regex (Falsos Negativos)
+    casos_fn = []
+    for col in df_gold.columns:
+        for idx in df_comparacion.index:
+            if df_comparacion.loc[idx, col] == "FN":
+                casos_fn.append({
+                    'id_analitica': df_textos.iloc[idx]['id'] if 'id' in df_textos.columns else idx,
+                    'marcador': col,
+                    'valor_gemini': df_gold.loc[idx, col]
+                })
+    
+    if casos_fn:
+        df_fallos = pd.DataFrame(casos_fn)
+        ruta_fallos = f'output/fallos_regex_fn_{nombre_lote}.csv'
+        df_fallos.to_csv(ruta_fallos, index=False, encoding='utf-8')
+        print(f"[{nombre_lote}] Casos donde Regex falló (FN) guardados en '{ruta_fallos}'")
+
     print(f"\n--- MÉTRICAS GLOBALES DEL MOTOR REGEX ({nombre_lote.upper()}) ---")
     print(f"Total entidades evaluadas: {len(valores)}")
     print(f"- Precisión: {precision:.4f}")
