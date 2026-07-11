@@ -1,6 +1,7 @@
 import streamlit as st
 import requests
 import time
+import os
 
 from src.ui.formatters import ner_to_dataframe, aplicar_estilo, quick_summary, clinical_context
 
@@ -18,9 +19,11 @@ Bilirrubina total: 1.1 mg/dL [0.1 - 1.2]
 """
 
 # Rutas URL de la API separadas
-URL_EXTRACT = "http://127.0.0.1:8000/api/v1/extract"
-URL_SYNTHESIZE = "http://127.0.0.1:8000/api/v1/synthesize"
-URL_CONSULT = "http://127.0.0.1:8000/api/v1/consult"
+BACKEND_URL = os.getenv("BACKEND_URL", "http://127.0.0.1:8000")
+URL_EXTRACT = f"{BACKEND_URL}/api/v1/extract"
+URL_SYNTHESIZE = f"{BACKEND_URL}/api/v1/synthesize"
+URL_CONSULT = f"{BACKEND_URL}/api/v1/consult"
+
 
 st.title("Agente Conversacional Oncológico")
 
