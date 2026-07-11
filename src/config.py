@@ -2,7 +2,7 @@ OLLAMA_MODELS = {
     "qwen2.5-7B": "qwen2.5-7B",
     "qwen3-0.6B": "qwen3-0.6B",
     "gemma4-nano-e2b": "gemma4-nano-e2b",
-    "biomistral-7B": "biomistral-oncologo"
+    "biomistral-7B": "biomistral-7B"
 }
 
 QWEN25_OPTIONS = {
@@ -117,6 +117,59 @@ TAREA ACTUAL:
 INPUT:
 {context}
 OUTPUT:"""
+    },
+    "biomistral-7B": {
+        "consult": """Por favor, actúa de acuerdo a tu rol de Facultativo Especialista Senior para responder la consulta del usuario basándote EXCLUSIVAMENTE en los siguientes datos extraídos.{context_block}
+
+CONSULTA DEL USUARIO:
+{context}
+
+Recuerda procesar la información ejecutando tu cadena de pensamiento dentro de la etiqueta <razonamiento> y proporcionando tu conclusión/respuesta directamente en la etiqueta <respuesta>.""",
+        "Few-Shot": """Por favor, actúa de acuerdo a tu rol de Facultativo Especialista Senior para responder la consulta del usuario basándote EXCLUSIVAMENTE en los siguientes datos extraídos.{context_block}
+
+A continuación se muestra un EJEMPLO del estilo de respuesta que se espera de ti ante preguntas breves sobre patologías o valores de marcadores:
+
+EJEMPLO DE CONSULTA:
+"¿Qué significa una GGT de 297 U/L en un paciente oncológico?"
+
+EJEMPLO DE RESPUESTA IDEAL:
+<razonamiento>
+La GGT (gamma-glutamil transferasa) tiene un rango de referencia de 5-40 U/L. Un valor de 297 U/L supone una elevación de aproximadamente 7 veces el límite superior de la normalidad. Según la escala CTCAE v5.0, esto se clasifica como Grado 2 (>3-5× LSN corresponde a G2 si tomamos el LSN estándar de 40 U/L, aunque 297/40 ≈ 7.4× podría considerarse G3 dependiendo del laboratorio). La GGT es un marcador sensible pero poco específico de daño hepatobiliar. En contexto oncológico, su elevación puede deberse a hepatotoxicidad farmacológica (quimioterapia, inmunoterapia), progresión metastásica hepática o colestasis inducida por fármacos.
+</razonamiento>
+<respuesta>
+Una GGT de 297 U/L representa una elevación significativa (aproximadamente 7× el límite superior normal), clasificable como toxicidad Grado 2-3 según CTCAE v5.0. En paciente oncológico, las causas más frecuentes incluyen hepatotoxicidad farmacológica y colestasis. Se recomienda correlacionar con otros marcadores hepáticos (FA, ALT, AST, bilirrubina) para determinar el patrón de daño (colestásico vs. hepatocelular) y valorar ajuste de tratamiento si procede.
+</respuesta>
+
+CONSULTA DEL USUARIO:
+{context}
+
+Recuerda procesar la información ejecutando tu cadena de pensamiento dentro de la etiqueta <razonamiento> y proporcionando tu conclusión/respuesta directamente en la etiqueta <respuesta>.""",
+        "CoT+FS": """Por favor, actúa de acuerdo a tu rol de Facultativo Especialista Senior para responder la consulta del usuario basándote EXCLUSIVAMENTE en los siguientes datos extraídos.{context_block}
+
+INSTRUCCIONES DE RAZONAMIENTO:
+Antes de responder, analiza paso a paso la fisiopatología relevante, los valores de referencia implicados y las posibles causas diferenciales en contexto oncológico. Después, proporciona una respuesta concisa y clínicamente precisa.
+
+A continuación se muestra un EJEMPLO del estilo de respuesta que se espera de ti:
+
+EJEMPLO DE CONSULTA:
+"El paciente presenta plaquetas de 85.000/µL tras el tercer ciclo de quimioterapia. ¿Cuál es la gravedad y qué implica clínicamente?"
+
+EJEMPLO DE RESPUESTA IDEAL:
+<razonamiento>
+El rango de referencia de plaquetas es 150.000-400.000/µL. Un valor de 85.000/µL representa trombocitopenia. Según CTCAE v5.0:
+- Grado 1: 75.000 - <LIN (150.000)
+- Grado 2: 50.000 - <75.000
+- Grado 3: 25.000 - <50.000
+Por tanto, 85.000/µL se clasifica como Grado 1. La causa más probable en este contexto es mielotoxicidad por quimioterapia. A este nivel, el riesgo hemorrágico espontáneo es bajo, pero debe monitorizarse la tendencia. Si las plaquetas descienden por debajo de 75.000 en ciclos sucesivos, podría requerirse ajuste de dosis o retraso del siguiente ciclo.
+</razonamiento>
+<respuesta>
+Las plaquetas de 85.000/µL constituyen una trombocitopenia Grado 1 (CTCAE v5.0), probablemente secundaria a mielotoxicidad por quimioterapia. A este nivel, el riesgo hemorrágico espontáneo es bajo. Se recomienda monitorizar el hemograma previo al siguiente ciclo; si la cifra desciende por debajo de 75.000/µL (Grado 2), considerar retraso del ciclo o ajuste de dosis según protocolo.
+</respuesta>
+
+CONSULTA DEL USUARIO:
+{context}
+
+INSTRUCCIÓN FINAL: Ejecuta tu cadena de razonamiento paso a paso dentro de <razonamiento>, identificando valores de referencia, grado CTCAE si aplica y diagnóstico diferencial. Luego, proporciona tu respuesta clínica en <respuesta>."""
     },
     "default": {
         "consult": """Eres un oncólogo experto. Tienes un alto dominio del ámbito médico.

@@ -57,8 +57,8 @@ class LLMService:
             logging.error(f"Error en la comunicación con Ollama: {str(e)}")
             return context, f"Error generando la síntesis clínica: Asegúrate de que Ollama está ejecutándose y el modelo '{model_id}' está descargado."
 
-    def generate_response(self, consult: str, method: str = "Zero-Shot", model_key: str = "biomistral-7B") -> str:
-        model_id = self.models.get(model_key, "biomistral-oncologo")
+    def generate_response(self, consult: str, method: str = "CoT+FS", model_key: str = "biomistral-7B") -> str:
+        model_id = self.models.get(model_key, "biomistral-7B")
         prompt = self._build_prompt(model_id, methodology=method, context=consult, consult=True)
         logging.info(f"Lanzando consulta a Ollama (Modelo: {model_id})")
         
