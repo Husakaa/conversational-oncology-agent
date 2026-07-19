@@ -1,4 +1,3 @@
-version: '3.8'
 
 services:
   backend:
@@ -13,7 +12,7 @@ services:
       - ollama
     networks:
       - tfg_network
-    restart: unless-stopped
+    restart: no
 
   frontend:
     build: .
@@ -27,7 +26,7 @@ services:
       - backend
     networks:
       - tfg_network
-    restart: unless-stopped
+    restart: no
 
   ollama:
     image: ollama/ollama:latest
@@ -35,10 +34,10 @@ services:
     ports:
       - "11434:11434"
     volumes:
-      - ollama_data:/root/.ollama
+      - ${HOME}/.ollama:/root/.ollama
     networks:
       - tfg_network
-    restart: unless-stopped
+    restart: no
     deploy:
       resources:
         reservations:
@@ -50,6 +49,3 @@ services:
 networks:
   tfg_network:
     driver: bridge
-
-volumes:
-  ollama_data:
