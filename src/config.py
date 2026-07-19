@@ -10,7 +10,8 @@ QWEN25_OPTIONS = {
     "top_k": 20,
     "top_p": 0.9,
     "num_ctx": 2048,
-    "num_predict": 512
+    "num_predict": 512,
+    "repeat_penalty": 1.2
 }
 
 QWEN3_OPTIONS = {
@@ -21,6 +22,14 @@ QWEN3_OPTIONS = {
     "num_ctx": 4096,
     "num_predict": 2024,
     "repeat_penalty": 1.2
+}
+
+QWEN35_OPTIONS = {
+    "temperature": 0.3,
+    "top_k": 20,
+    "top_p": 0.8,
+    "num_ctx": 4096,
+    "num_predict": 2024
 }
 
 GEMMA4_OPTIONS = {
@@ -38,7 +47,8 @@ BIOMISTRAL_OPTIONS = {
     "num_ctx": 2048,
     "num_predict": 512
 }
-EJEMPLO_FS_INPUT = """[Fecha no especificada]: Hb: 14.5 | Plaquetas: 147 | Neutrófilos: 3.41 | Creatinina: 0.50 | GGT: 297 | ALT: 83 | resto bien.
+# ── Ejemplo Few-Shot 1: Perfil hepatobiliar (colestasis) ──
+EJEMPLO_FS_1_INPUT = """[Fecha no especificada]: Hb: 14.5 | Plaquetas: 147 | Neutrófilos: 3.41 | Creatinina: 0.50 | GGT: 297 | ALT: 83 | resto bien.
 
 ----------------------------------------------------------------------------------------------------
 
@@ -49,9 +59,38 @@ SECCIÓN C: ESTRATIFICACIÓN DE TOXICIDAD (CTCAE v5.0) ⚠️
     - AST (51 U/L): Grado 1. Elevación AST (GOT) Leve (41 - 120 U/L). (Ref: 3.0 - 40.0).
     - LDH (274 U/L): Grado 0 (Normal). Nota: Resultado corregido estadísticamente por hemólisis. (Ref: 200.0 - 380.0)."""
 
-EJEMPLO_FS_OUTPUT = """SECCIÓN D: SÍNTESIS CLÍNICA Y EVOLUCIÓN 📊
+EJEMPLO_FS_1_OUTPUT = """SECCIÓN D: SÍNTESIS CLÍNICA Y EVOLUCIÓN 📊
 
-El evento limitante de dosis es la elevación de GGT Grado 2, que junto a la elevación leve de fosfatasa alcalina y transaminasas (G1), sugiere un perfil de colestasis o afectación biliar incipiente. Las series hematológicas (neutrófilos y plaquetas) y la función renal se encuentran preservadas dentro de rangos seguros. Se recomienda monitorizar el perfil hepático en el próximo ciclo y repetir la toma de LDH debido a la interferencia por hemólisis."""
+El perfil analítico revela una afectación hepatobiliar predominante, con elevación moderada de GGT (Grado 2) acompañada de incrementos leves en fosfatasa alcalina, ALT y AST (Grado 1), configurando un patrón compatible con colestasis incipiente. Las series hematológicas y la función renal permanecen conservadas. Se recomienda control estrecho del perfil hepático en el próximo ciclo y repetición de LDH por interferencia hemolítica en la muestra actual."""
+
+# ── Ejemplo Few-Shot 2: Mielotoxicidad hematológica ──
+EJEMPLO_FS_2_INPUT = """[Fecha no especificada]: Hb: 9.8 | Plaquetas: 62 | Neutrófilos: 0.89 | Creatinina: 0.72 | GGT: 38 | ALT: 25 | resto bien.
+
+----------------------------------------------------------------------------------------------------
+
+SECCIÓN C: ESTRATIFICACIÓN DE TOXICIDAD (CTCAE v5.0) ⚠️
+    - Neutrófilos (0.89 ×10⁹/L): Grado 3. Neutropenia Grave (0.5 - 1.0 ×10⁹/L). (Ref: 1.5 - 8.0).
+    - Plaquetas (62 ×10⁹/L): Grado 2. Trombocitopenia Moderada (50 - 75 ×10⁹/L). (Ref: 150 - 400).
+    - Hemoglobina (9.8 g/dL): Grado 1. Anemia Leve (10.0 - LIN o 8.0 - 10.0 g/dL). (Ref: 12.0 - 16.0)."""
+
+EJEMPLO_FS_2_OUTPUT = """SECCIÓN D: SÍNTESIS CLÍNICA Y EVOLUCIÓN 📊
+
+Los resultados muestran un cuadro de mielotoxicidad significativa con neutropenia grave (Grado 3) como hallazgo de mayor relevancia clínica, asociada a trombocitopenia moderada (Grado 2) y anemia leve (Grado 1). La convergencia de estas tres citopenias sugiere supresión medular global, probablemente relacionada con el régimen quimioterápico. La función hepática y renal se mantienen dentro de parámetros normales. Se recomienda valorar el uso profiláctico de G-CSF, controlar el riesgo hemorrágico por la trombocitopenia y reevaluar el hemograma antes del siguiente ciclo para decidir sobre posible reducción de dosis."""
+
+# ── Ejemplo Few-Shot 3: Nefrotoxicidad con hiponatremia ──
+EJEMPLO_FS_3_INPUT = """[Fecha no especificada]: Hb: 12.1 | Plaquetas: 198 | Neutrófilos: 4.20 | Creatinina: 1.85 | Na: 128 | K: 5.3 | Urea: 68 | resto bien.
+
+----------------------------------------------------------------------------------------------------
+
+SECCIÓN C: ESTRATIFICACIÓN DE TOXICIDAD (CTCAE v5.0) ⚠️
+    - Creatinina (1.85 mg/dL): Grado 2. Elevación de Creatinina Moderada (1.5 - 3.0× LSN). (Ref: 0.6 - 1.2).
+    - Sodio (128 mEq/L): Grado 2. Hiponatremia Moderada (125 - 130 mEq/L). (Ref: 136 - 145).
+    - Potasio (5.3 mEq/L): Grado 1. Hiperpotasemia Leve (LSN - 5.5 mEq/L). (Ref: 3.5 - 5.0).
+    - Urea (68 mg/dL): Grado 0 (Normal). (Ref: 10.0 - 50.0). Nota: Elevada pero sin grado CTCAE asignado."""
+
+EJEMPLO_FS_3_OUTPUT = """SECCIÓN D: SÍNTESIS CLÍNICA Y EVOLUCIÓN 📊
+
+Se identifica un deterioro de la función renal con creatinina en Grado 2, acompañado de hiponatremia moderada (Grado 2) e hiperpotasemia leve (Grado 1), junto a elevación de urea. Este conjunto de alteraciones electrolíticas y de retención nitrogenada configura un patrón compatible con nefrotoxicidad inducida por tratamiento. Las series hematológicas y la función hepática no presentan alteraciones. Es prioritario asegurar una hidratación adecuada, monitorizar la evolución de la función renal y electrolitos en 48-72 horas, y considerar ajuste o suspensión temporal de fármacos nefrotóxicos."""
 
 MODEL_PROMPTS = {
     "qwen3-0.6B": {
@@ -72,7 +111,7 @@ RESULTADOS:
   "plan_sugerido": "Acción breve de 5 palabras"
 }}
 EJEMPLO INPUT:
-""" + EJEMPLO_FS_INPUT + """
+""" + EJEMPLO_FS_1_INPUT + """
 EJEMPLO OUTPUT:
 {{
   "hallazgo_limitante": "GGT",
@@ -105,7 +144,7 @@ Devuelve el análisis estrictamente en este formato JSON:
 }}
 EJEMPLO DE REFERENCIA:
 INPUT:
-""" + EJEMPLO_FS_INPUT + """
+""" + EJEMPLO_FS_1_INPUT + """
 OUTPUT:
 {{
   "hallazgo_limitante": "GGT",
@@ -176,16 +215,18 @@ INSTRUCCIÓN FINAL: Ejecuta tu cadena de razonamiento paso a paso dentro de <raz
 Vas a recibir consultas y debes contestar de forma altamente explicativa dando detalles.
 Si se proporcionan resultados de laboratorio, úsalos como referencia para contextualizar tu respuesta.{context_block}
 Consulta: {context}""",
-        "Zero-Shot": """Basado en estos resultados, redacta únicamente la 'SECCIÓN D: SÍNTESIS CLÍNICA Y EVOLUCIÓN 📊'.
+        "Zero-Shot": """Basado en estos resultados, redacta únicamente la 'SECCIÓN D: SÍNTESIS CLÍNICA 📊'.
+EXTENSIÓN: Máximo un párrafo de 4-6 frases. Sé conciso y directo.
 RESULTADOS:
 {context}
 SECCIÓN D:""",
-        "Few-Shot": """Eres un oncólogo experto. Sigue el estilo del ejemplo para redactar la 'SECCIÓN D: SÍNTESIS CLÍNICA Y EVOLUCIÓN 📊'.
+        "Few-Shot": """Eres un oncólogo experto. Sigue el estilo del ejemplo para redactar la 'SECCIÓN D: SÍNTESIS CLÍNICA 📊'.
+EXTENSIÓN OBLIGATORIA: Un solo párrafo de máximo 4-6 frases. No te extiendas más.
 EJEMPLO:
 INPUT:
-""" + EJEMPLO_FS_INPUT + """
+""" + EJEMPLO_FS_1_INPUT + """
 OUTPUT SECCIÓN D:
-""" + EJEMPLO_FS_OUTPUT + """
+""" + EJEMPLO_FS_1_OUTPUT + """
 TAREA ACTUAL:
 INPUT:
 {context}
@@ -198,30 +239,45 @@ REGLAS ESTRICTAS DE FORMATO:
     2. Básate EXCLUSIVAMENTE en los resultados de laboratorio proporcionados.
     3. NO uses viñetas, ni palabras como "Paso 1", "Paso 2", "Análisis individual" o "Conclusión".
     4. Escribe un único texto narrativo (prosa médica) conectando los hallazgos de forma lógica.
-    5. Tu respuesta DEBE empezar directamente por 'SECCIÓN D: SÍNTESIS CLÍNICA Y EVOLUCIÓN 📊'.
+    5. EXTENSIÓN: Un solo párrafo conciso de máximo 4-6 frases. No te extiendas innecesariamente.
 
 DATOS DEL PACIENTE:
 {context}""",
-        "CoT+FS": """Eres un oncólogo clínico experto. Tu tarea es analizar la fisiopatología conjunta de las toxicidades y redactar una síntesis profesional siguiendo estrictamente el estilo narrativo del ejemplo.
+        "CoT+FS": """Eres un oncólogo clínico experto. Tu tarea es analizar la fisiopatología conjunta de las toxicidades y redactar una síntesis profesional.
 
-EJEMPLO DE REFERENCIA (ESTILO Y TONO):
+A continuación se muestran TRES EJEMPLOS DE REFERENCIA para que aprendas el tono y la estructura. Observa que cada ejemplo comienza de forma distinta:
+
+--- EJEMPLO 1 ---
 INPUT:
-""" + EJEMPLO_FS_INPUT + """
+""" + EJEMPLO_FS_1_INPUT + """
 OUTPUT:
-""" + EJEMPLO_FS_OUTPUT + """
+""" + EJEMPLO_FS_1_OUTPUT + """
+
+--- EJEMPLO 2 ---
+INPUT:
+""" + EJEMPLO_FS_2_INPUT + """
+OUTPUT:
+""" + EJEMPLO_FS_2_OUTPUT + """
+
+--- EJEMPLO 3 ---
+INPUT:
+""" + EJEMPLO_FS_3_INPUT + """
+OUTPUT:
+""" + EJEMPLO_FS_3_OUTPUT + """
 
 REGLAS ESTRICTAS DE SEGURIDAD Y FORMATO:
 1. NO inventes ningún dato (edad, sexo, diagnóstico o fármacos). Si no está en el INPUT, no existe.
 2. NO incluyas el proceso de pensamiento ("Paso 1", "Paso 2") en la respuesta final.
 3. Escribe un texto único en prosa médica, sin viñetas ni etiquetas de sección internas.
-4. La respuesta DEBE empezar directamente con 'SECCIÓN D: SÍNTESIS CLÍNICA Y EVOLUCIÓN 📊'.
-5. Usa un tono analítico, conectando cómo una alteración puede influir en otra.
-6. INDEPENDENCIA DEL EJEMPLO: Usa el EJEMPLO DE REFERENCIA solo para aprender el tono y la estructura. 
+4. Usa un tono analítico, conectando cómo una alteración puede influir en otra.
+5. INDEPENDENCIA DE LOS EJEMPLOS: Usa los ejemplos solo para aprender el tono y la estructura, NO para copiar contenido.
+6. NO copies frases textuales de los ejemplos. Cada informe debe tener su propio inicio y redacción original adaptada a los datos reales del paciente.
+7. EXTENSIÓN: Un solo párrafo conciso de máximo 4-6 frases. Observa la brevedad de los ejemplos.
 
 TAREA ACTUAL:
 INPUT:
 {context}
 
-INSTRUCCIÓN FINAL: Redacta ahora el informe. Empieza tu respuesta exactamente con la frase 'SECCIÓN D: SÍNTESIS CLÍNICA Y EVOLUCIÓN 📊' y continúa con la prosa médica."""
+INSTRUCCIÓN FINAL: Redacta ahora el informe en un solo párrafo breve, con un inicio original y adaptado a los datos proporcionados."""
     }
 }
