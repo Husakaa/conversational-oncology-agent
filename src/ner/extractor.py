@@ -8,6 +8,15 @@ from .patterns import PATRONES, REGLAS_CTCAE
 # Configuración básica de logging 
 logging.basicConfig(level=logging.INFO, format='%(levelname)s: %(message)s')
 
+# Umbral mínimo para considerar un documento como una analítica válida
+MIN_CAPTURE_RATE = 0.10  # X% de aciertos en la extracción regex
+MIN_BIOMARKERS = 3        # Mínimo de biomarcadores extraídos
+
+
+class InvalidDocumentError(Exception):
+    """Excepción usada cuando el texto no parece una analítica válida."""
+    pass
+
 # Rangos biológicos plausibles (valor_min, valor_max)
 # Valores fuera de estos rangos se consideran errores de extracción o unidades incorrectas.
 # Los límites son generosos para no descartar valores extremos pero reales.
@@ -267,5 +276,19 @@ class MedicalExtractor:
                     },
                     "ctcae": toxicidad
                 }
+
+        capture_rate = len(resultados) / len(self.patrones) if self.patrones else 0.0
+
+        if len(resultados) < MIN_BIOMARKERS or capture_rate < MIN_CAPTURE_RATE:
+            logging.warning(
+                f"Documento inválido: solo se detectaron {len(resultados)} biomarcadores "
+                f"({capture_rate:.0%} de captura). Se requiere al menos "
+                f"{MIN_BIOMARKERS} biomarcadores o {MIN_CAPTURE_RATE:.0%} de captura."
+            )
+            raise InvalidDocumentError(
+                f"El texto no parece una analítica de laboratorio válida. "
+                f"Se detectaron solo {len(resultados)} biomarcadores "
+                f"({capture_rate:.0%} de captura)."
+            )
 
         return resultados

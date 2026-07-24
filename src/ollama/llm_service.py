@@ -3,7 +3,7 @@ from typing import Dict, Any, Tuple
 import ollama
 
 from src.ui.formatters import clinical_context, biomarkers_to_markdown
-from src.config import OLLAMA_MODELS, QWEN25_OPTIONS, QWEN3_OPTIONS, GEMMA4_OPTIONS, BIOMISTRAL_OPTIONS, MODEL_PROMPTS
+from src.config import OLLAMA_MODELS, QWEN25_OPTIONS, QWEN3_OPTIONS, QWEN35_OPTIONS, GEMMA4_OPTIONS, BIOMISTRAL_OPTIONS, MODEL_PROMPTS
 
 # Configuración básica de logging
 logging.basicConfig(level=logging.INFO, format='%(levelname)s: %(message)s')
@@ -13,6 +13,7 @@ class LLMService:
         self.models = OLLAMA_MODELS
         self.options_qwen25 = QWEN25_OPTIONS
         self.options_qwen3 = QWEN3_OPTIONS
+        self.options_qwen35 = QWEN35_OPTIONS
         self.options_gemma4 = GEMMA4_OPTIONS
         self.options_biomistral = BIOMISTRAL_OPTIONS
         self.last_biomarkers = None
@@ -38,7 +39,7 @@ class LLMService:
         prompt_final = self._build_prompt(model_id, method, context)
         logging.info(f"Lanzando inferencia a Ollama (Modelo: {model_id} | Método: {method})")
         
-        options = self.options_qwen3
+        options = self.options_qwen35
         if model_key == "qwen2.5-7B": options = self.options_qwen25
         elif model_key == "gemma4-nano-e2b": options = self.options_gemma4
         elif model_key == "biomistral-7B": options = self.options_biomistral

@@ -29,7 +29,7 @@ st.title("Agente Conversacional Oncológico")
 
 # Inicializacion del historial del chat y texto de la analítica
 if "messages" not in st.session_state:
-    st.session_state.messages = [] # Creamos una lista como "base de datos" no persistente
+    st.session_state.messages = [] # Creamos una lista como base de datos no persistente
 if "texto_analitica" not in st.session_state:
     st.session_state.texto_analitica = ""
 
@@ -45,8 +45,14 @@ with st.sidebar:
     
     # Si se sube un archivo, sobrescribe el estado
     if archivo:
-        st.session_state.texto_analitica = archivo.getvalue().decode("utf-8")
-        st.write("Archivo cargado")
+        if not archivo.name.lower().endswith(".txt"):
+            st.error("El archivo debe tener extensión .txt para ser procesado.")
+        else:
+            try:
+                st.session_state.texto_analitica = archivo.getvalue().decode("utf-8")
+                st.success("Archivo cargado correctamente.")
+            except Exception:
+                st.error("No se pudo leer el archivo. Asegúrese de que sea un .txt válido.")
         
     # Solo mostramos el área de edición y las herramientas si hay texto cargado
     if st.session_state.texto_analitica:
@@ -60,34 +66,54 @@ with st.sidebar:
         
         st.header("Herramientas")
         
+        def get_error_detail(response):
+            try:
+                return response.json().get("detail", response.text)
+            except ValueError:
+                return response.text
+
         if st.button("Extraer entidades"):
             payload = {"texto_clinico": texto_analitica}
-            response = requests.post(URL_EXTRACT, json=payload)
-            response.raise_for_status()
-            datos_json = response.json().get("datos_estructurados", {})
-            
-            df_resultados = ner_to_dataframe(datos_json)
-            
-            if not df_resultados.empty:
-                # Lo guardamos en el historial indicando el tipo
-                st.session_state.messages.append({
-                    "role": "assistant", 
-                    "type": "dataframe", 
-                    "content": df_resultados
-                })
-            else:
-                st.warning("No se detectaron biomarcadores válidos.")
+            try:
+                response = requests.post(URL_EXTRACT, json=payload, timeout=20)
+                if not response.ok:
+                    detalle = get_error_detail(response)
+                    st.error(f"No se pudo extraer la analítica: {detalle}")
+                else:
+                    datos_json = response.json().get("datos_estructurados", {})
+                    df_resultados = ner_to_dataframe(datos_json)
+                    if not df_resultados.empty:
+                        st.session_state.messages.append({
+                            "role": "assistant", 
+                            "type": "dataframe", 
+                            "content": df_resultados
+                        })
+                    else:
+                        st.warning("No se detectaron biomarcadores válidos en la analítica.")
+            except requests.exceptions.ConnectionError:
+                st.error("Error de conexión: el servidor backend no está disponible.")
+            except requests.exceptions.Timeout:
+                st.error("La petición de extracción tardó demasiado. Intente de nuevo.")
+            except requests.exceptions.RequestException as e:
+                st.error(f"Error en la petición de extracción: {e}")
 
         if st.button("Resumen rápido"):
             payload = {"texto_clinico": texto_analitica}
-            # Llamamos al motor Regex 
-            response = requests.post(URL_EXTRACT, json=payload)
-            response.raise_for_status()    
-            # Extraemos el JSON
-            datos_json = response.json().get("datos_estructurados", {})
-            # Generamos la línea clínica 
-            resultado_resumen = quick_summary(datos_json)
-            st.session_state.messages.append({"role": "assistant", "content": resultado_resumen})
+            try:
+                response = requests.post(URL_EXTRACT, json=payload, timeout=20)
+                if not response.ok:
+                    detalle = get_error_detail(response)
+                    st.error(f"No se pudo generar el resumen: {detalle}")
+                else:
+                    datos_json = response.json().get("datos_estructurados", {})
+                    resultado_resumen = quick_summary(datos_json)
+                    st.session_state.messages.append({"role": "assistant", "content": resultado_resumen})
+            except requests.exceptions.ConnectionError:
+                st.error("Error de conexión: el servidor backend no está disponible.")
+            except requests.exceptions.Timeout:
+                st.error("La petición de extracción tardó demasiado. Intente de nuevo.")
+            except requests.exceptions.RequestException as e:
+                st.error(f"Error en la petición de resumen: {e}")
 
         if st.button("Informe completo"):
             payload = {"texto_clinico": texto_analitica, "metodologia_prompt": "CoT+FS"}
