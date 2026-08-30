@@ -1,0 +1,5 @@
+lote,document_id,metrica,valor,umbral_inferior,umbral_superior,motivo
+lote1,Analitica23,palabras,1544.0,-200.5,883.5,Outlier superior
+lote1,Analitica23,tokens,2054.0,-266.0,1174.0,Outlier superior
+lote2,AN_input32,palabras,873.0,165.875,424.875,Outlier superior
+lote2,AN_input32,tokens,1161.0,221.375,564.375,Outlier superior

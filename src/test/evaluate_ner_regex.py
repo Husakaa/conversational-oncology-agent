@@ -234,7 +234,11 @@ def evaluar_lote(df_textos, lista_gold, nombre_lote):
     ruta_grafico = f'output/mc_ner_regex_{nombre_lote}.png'
     plt.savefig(ruta_grafico, dpi=300)
     plt.close() # Cierra la figura para que no se solape con la del siguiente lote
-    print(f"[{nombre_lote}] Matriz guardada en '{ruta_grafico}'")
+    
+    df_cm = pd.DataFrame(cm, index=['Ausente (Real)', 'Presente (Real)'], columns=['Ausente (Pred)', 'Presente (Pred)'])
+    ruta_cm_csv = f'output/mc_ner_regex_{nombre_lote}_data.csv'
+    df_cm.to_csv(ruta_cm_csv)
+    print(f"[{nombre_lote}] Matriz guardada en '{ruta_grafico}' y datos en '{ruta_cm_csv}'")
 
     # Calcular métricas
     precision = vp / (vp + fp) if (vp + fp) > 0 else 0

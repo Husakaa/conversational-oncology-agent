@@ -1,0 +1,67 @@
+{
+    "lote": "lote1",
+    "n_analiticas": 25,
+    "longitud_documentos_palabras": {
+        "media": 280.5,
+        "desviacion_estandar": 198.1404,
+        "min": 71.0,
+        "max": 879.0,
+        "rango": [
+            71.0,
+            879.0
+        ],
+        "mediana": 280.5,
+        "analiticas_descartadas_por_iqr": [
+            {
+                "document_id": "Analitica23",
+                "valor": 1544.0,
+                "umbral_inferior": -200.5,
+                "umbral_superior": 883.5,
+                "motivo": "Outlier superior",
+                "metrica": "palabras"
+            }
+        ]
+    },
+    "longitud_documentos_tokens_aproximados": {
+        "media": 373.0,
+        "desviacion_estandar": 263.5155,
+        "min": 94.0,
+        "max": 1169.0,
+        "rango": [
+            94.0,
+            1169.0
+        ],
+        "mediana": 373.0,
+        "analiticas_descartadas_por_iqr": [
+            {
+                "document_id": "Analitica23",
+                "valor": 2054.0,
+                "umbral_inferior": -266.0,
+                "umbral_superior": 1174.0,
+                "motivo": "Outlier superior",
+                "metrica": "tokens"
+            }
+        ]
+    },
+    "biomarcadores_detectables_por_informe": {
+        "media": 13.92,
+        "desviacion_estandar": 4.2222,
+        "min": 4.0,
+        "max": 22.0,
+        "rango": [
+            4.0,
+            22.0
+        ]
+    },
+    "tasa_escasez_catalogo": {
+        "media": 50.2857,
+        "desviacion_estandar": 15.0792,
+        "min": 21.4286,
+        "max": 85.7143,
+        "rango": [
+            21.4286,
+            85.7143
+        ],
+        "unidad": "%"
+    }
+}

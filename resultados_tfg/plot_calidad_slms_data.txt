@@ -1,0 +1,34 @@
+==================================================
+ANÁLISIS DE EVALUACIÓN PDQI-9 (LOTE 1)
+==================================================
+Total de analíticas analizadas: 24
+
+[+] Puntuación Promedio por Métrica
+-----------------------------------
+  - Precisa               : 3.42 (std: 1.47)
+  - Exhaustiva            : 3.96 (std: 0.69)
+  - Util                  : 4.08 (std: 0.97)
+  - Organizada            : 5.00 (std: 0.00)
+  - Comprensible          : 4.42 (std: 0.78)
+  - Concisa               : 4.96 (std: 0.20)
+  - Sintetizada           : 4.46 (std: 0.72)
+  - Consistencia_interna  : 4.12 (std: 1.33)
+
+[+] Estadísticas Generales
+-----------------------------------
+  - Puntuación media global: 4.30 (std: 0.63)
+  - Puntuación máxima obtenida: 5.00 (Documento ID: 3)
+  - Puntuación mínima obtenida: 3.25 (Documento ID: 14)
+  - Longitud media (tokens aprox): 70.0 (std: 15.8)
+
+[+] Cruce: Longitud de la Nota vs Puntuación
+-----------------------------------
+  - Correlación de Pearson: 0.089
+  - Interpretación: No hay correlación lineal significativa.
+
+[+] Métricas de Seguridad y Calidad
+-----------------------------------
+  - Notas con error de seguridad grave: 0 (0.0%)
+  - Notas con contradicciones insalvables: 0 (0.0%)
+  - Notas marcadas como 'human_generated': 2 (8.3%)
+==================================================

@@ -61,6 +61,8 @@ def generar_grafica_latencias(df):
     
     plt.savefig('output/plot_latencias_distribucion.png', dpi=300)
     plt.close()
+    
+    df_melted.to_csv('output/plot_latencias_distribucion_data.csv', index=False)
 
 def generar_grafica_calidad(ruta_json):
     print("Generando análisis de Calidad Médica (Radar/Bar Chart)...")
@@ -113,6 +115,13 @@ def generar_grafica_calidad(ruta_json):
     
     plt.savefig('output/plot_calidad_slms.png', dpi=300)
     plt.close()
+    
+    df_calidad = pd.DataFrame({
+        'Metrica': metrics,
+        'Qwen_2.5_Sintesis': qwen_scores,
+        'BioMistral_Chat': bio_scores
+    })
+    df_calidad.to_csv('output/plot_calidad_slms_data.csv', index=False)
 
 if __name__ == "__main__":
     os.makedirs('output', exist_ok=True)
