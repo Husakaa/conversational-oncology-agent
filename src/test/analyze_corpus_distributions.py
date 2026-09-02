@@ -96,10 +96,7 @@ def crear_plot_histogramas(df_long: pd.DataFrame, lote: str, salida: str):
     ruta = os.path.join(salida, f'distribucion_biomarcadores_{lote}.png')
     plt.savefig(ruta, dpi=300, bbox_inches='tight')
     plt.close()
-    
-    ruta_csv = os.path.join(salida, f'distribucion_biomarcadores_{lote}_data.csv')
-    df_long.to_csv(ruta_csv, index=False)
-    print(f'Guardado: {ruta} y {ruta_csv}')
+    print(f'Guardado: {ruta}')
 
 
 def crear_plot_boxplots(df: pd.DataFrame, lote: str, salida: str):
@@ -120,10 +117,7 @@ def crear_plot_boxplots(df: pd.DataFrame, lote: str, salida: str):
     ruta = os.path.join(salida, f'boxplot_biomarcadores_{lote}.png')
     plt.savefig(ruta, dpi=300, bbox_inches='tight')
     plt.close()
-    
-    ruta_csv = os.path.join(salida, f'boxplot_biomarcadores_{lote}_data.csv')
-    numeric.to_csv(ruta_csv, index=False)
-    print(f'Guardado: {ruta} y {ruta_csv}')
+    print(f'Guardado: {ruta}')
 
 
 def guardar_resumen_estadistico(df: pd.DataFrame, lote: str, salida: str):
@@ -131,42 +125,6 @@ def guardar_resumen_estadistico(df: pd.DataFrame, lote: str, salida: str):
     ruta = os.path.join(salida, f'resumen_estadistico_{lote}.csv')
     numeric.describe(include='all').transpose().to_csv(ruta, index=True)
     print(f'Guardado: {ruta}')
-
-
-def _filtrar_outliers_iqr(valores: List[float], ids: List[str] = None, metrica: str = ""):
-    if not valores:
-        return [], []
-
-    arr = np.asarray(valores, dtype=float)
-    if len(arr) <= 2:
-        return arr.tolist(), []
-
-    q1 = np.percentile(arr, 25)
-    q3 = np.percentile(arr, 75)
-    iqr = q3 - q1
-    lower = q1 - 1.5 * iqr
-    upper = q3 + 1.5 * iqr
-    mask = (arr >= lower) & (arr <= upper)
-
-    valores_filtrados = arr[mask].tolist()
-    descartados = []
-    if ids is not None:
-        for document_id, valor, keep in zip(ids, arr, mask):
-            if not keep:
-                val_float = float(valor)
-                motivo = "Outlier superior" if val_float > upper else ("Outlier inferior" if val_float < lower else "Outlier")
-                registro = {
-                    'document_id': document_id,
-                    'valor': val_float,
-                    'umbral_inferior': float(lower),
-                    'umbral_superior': float(upper),
-                    'motivo': motivo
-                }
-                if metrica:
-                    registro['metrica'] = metrica
-                descartados.append(registro)
-
-    return valores_filtrados, descartados
 
 
 def _estadisticos_basicos(valores: List[float], usar_mediana: bool = False, excluir_outliers: bool = False) -> Dict[str, float]:
@@ -231,11 +189,8 @@ def calcular_metricas_recomendadas(df_textos: pd.DataFrame, lote: str, extractor
     longitudes_tokens = []
     biomarcadores_detectados = []
     tasa_escasez_catalogo = []
-    document_ids = []
 
     for _, fila in df_textos.iterrows():
-        document_ids.append(str(fila.get('document_id', '')))
-
         texto = str(fila.get('texto', ''))
         palabras = re.findall(r"\b\w+\b", texto)
         n_palabras = len(palabras)
@@ -258,20 +213,11 @@ def calcular_metricas_recomendadas(df_textos: pd.DataFrame, lote: str, extractor
             porcentaje_ausente = 0.0
         tasa_escasez_catalogo.append(float(porcentaje_ausente))
 
-    palabras_filtradas, descartadas_palabras = _filtrar_outliers_iqr(longitudes_palabras, document_ids, metrica='palabras')
-    tokens_filtrados, descartadas_tokens = _filtrar_outliers_iqr(longitudes_tokens, document_ids, metrica='tokens')
-
     metricas = {
         'lote': lote,
         'n_analiticas': int(len(df_textos)),
-        'longitud_documentos_palabras': {
-            **_estadisticos_basicos(palabras_filtradas, usar_mediana=True),
-            'analiticas_descartadas_por_iqr': descartadas_palabras
-        },
-        'longitud_documentos_tokens_aproximados': {
-            **_estadisticos_basicos(tokens_filtrados, usar_mediana=True),
-            'analiticas_descartadas_por_iqr': descartadas_tokens
-        },
+        'longitud_documentos_palabras': _estadisticos_basicos(longitudes_palabras, usar_mediana=True, excluir_outliers=False),
+        'longitud_documentos_tokens_aproximados': _estadisticos_basicos(longitudes_tokens, usar_mediana=True, excluir_outliers=False),
         'biomarcadores_detectables_por_informe': _estadisticos_basicos(biomarcadores_detectados),
         'tasa_escasez_catalogo': {
             **_estadisticos_basicos(tasa_escasez_catalogo),
@@ -285,45 +231,6 @@ def calcular_metricas(df_textos: pd.DataFrame, lote: str, extractor: MedicalExtr
     return calcular_metricas_recomendadas(df_textos, lote, extractor)
 
 
-def crear_plot_comparacion_tokens(tokens_por_lote: Dict[str, List[float]], salida: str):
-    sns.set_style('whitegrid')
-    data = []
-    for lote, tokens in tokens_por_lote.items():
-        for t in tokens:
-            data.append({'Lote': lote.capitalize(), 'Tokens': t})
-    
-    df_tokens = pd.DataFrame(data)
-    if df_tokens.empty:
-        return
-
-    # 1. KDE Plot
-    plt.figure(figsize=(10, 6))
-    sns.kdeplot(data=df_tokens, x='Tokens', hue='Lote', fill=True, common_norm=False, palette='Set2', alpha=0.5, linewidth=2)
-    plt.title('Distribución de Tokens por Lote (KDE)', fontsize=16)
-    plt.xlabel('Número aproximado de Tokens', fontsize=12)
-    plt.ylabel('Densidad', fontsize=12)
-    plt.tight_layout()
-    ruta_kde = os.path.join(salida, 'comparacion_tokens_kde.png')
-    plt.savefig(ruta_kde, dpi=300, bbox_inches='tight')
-    plt.close()
-    print(f'Gráfico KDE de tokens guardado en: {ruta_kde}')
-
-    # 2. Boxplots Paralelos
-    plt.figure(figsize=(10, 4))
-    sns.boxplot(data=df_tokens, x='Tokens', y='Lote', hue='Lote', palette='Set2', showfliers=True, legend=False)
-    plt.title('Distribución de Tokens por Lote (Boxplot)', fontsize=16)
-    plt.xlabel('Número aproximado de Tokens', fontsize=12)
-    plt.ylabel('Lote', fontsize=12)
-    plt.tight_layout()
-    ruta_box = os.path.join(salida, 'comparacion_tokens_boxplot.png')
-    plt.savefig(ruta_box, dpi=300, bbox_inches='tight')
-    plt.close()
-    
-    ruta_tokens_csv = os.path.join(salida, 'comparacion_tokens_data.csv')
-    df_tokens.to_csv(ruta_tokens_csv, index=False)
-    print(f'Gráfico Boxplot de tokens guardado en: {ruta_box} y datos en {ruta_tokens_csv}')
-
-
 def generar_estudio(distribution_dir: str = None):
     base_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
     analiticas_dir = os.path.join(base_dir, 'analiticas')
@@ -333,8 +240,6 @@ def generar_estudio(distribution_dir: str = None):
     extractor = MedicalExtractor()
     lotes = {'lote1': os.path.join(analiticas_dir, 'lote1'), 'lote2': os.path.join(analiticas_dir, 'lote2')}
     df_resultados = []
-    descartadas_totales = []
-    tokens_por_lote = {}
 
     for nombre_lote, carpeta in lotes.items():
         df_textos = cargar_analiticas(carpeta)
@@ -343,12 +248,6 @@ def generar_estudio(distribution_dir: str = None):
             continue
 
         print(f'Procesando {len(df_textos)} documentos de {nombre_lote}...')
-        tokens_por_lote[nombre_lote] = []
-        for texto in df_textos['texto']:
-            palabras = re.findall(r"\b\w+\b", str(texto))
-            n_tokens = max(1, round(len(palabras) * 1.33)) if str(texto).strip() else 0
-            tokens_por_lote[nombre_lote].append(n_tokens)
-
         df_lote = extraer_valores(df_textos, extractor, nombre_lote)
         df_resultados.append(df_lote)
 
@@ -375,30 +274,6 @@ def generar_estudio(distribution_dir: str = None):
             json.dump(metricas, f, ensure_ascii=False, indent=4)
         print(f'Métricas guardadas en {ruta_metricas}')
 
-        # Guardado y presentación de analíticas descartadas por IQR
-        descartadas_palabras = metricas['longitud_documentos_palabras'].get('analiticas_descartadas_por_iqr', [])
-        descartadas_tokens = metricas['longitud_documentos_tokens_aproximados'].get('analiticas_descartadas_por_iqr', [])
-        todas_descartadas_lote = descartadas_palabras + descartadas_tokens
-
-        for item in todas_descartadas_lote:
-            item_con_lote = {'lote': nombre_lote, **item}
-            descartadas_totales.append(item_con_lote)
-
-        if todas_descartadas_lote:
-            df_descartadas = pd.DataFrame([{'lote': nombre_lote, **item} for item in todas_descartadas_lote])
-            cols_deseadas = ['lote', 'document_id', 'metrica', 'valor', 'umbral_inferior', 'umbral_superior', 'motivo']
-            cols = [c for c in cols_deseadas if c in df_descartadas.columns] + [c for c in df_descartadas.columns if c not in cols_deseadas]
-            df_descartadas = df_descartadas[cols]
-
-            ruta_descartadas = os.path.join(salida, f'analiticas_descartadas_iqr_{nombre_lote}.csv')
-            df_descartadas.to_csv(ruta_descartadas, index=False)
-            print(f'Analíticas descartadas por IQR guardadas en {ruta_descartadas}')
-            print(f'\n--- Analíticas descartadas por rango IQR ({nombre_lote}) ---')
-            print(df_descartadas.to_string(index=False))
-            print('-' * 60 + '\n')
-        else:
-            print(f'No se descartó ninguna analítica por el rango IQR en {nombre_lote}.')
-
         invalidos = df_lote[~df_lote['valid']]
         if not invalidos.empty:
             ruta_invalidos = os.path.join(salida, f'documentos_invalidos_{nombre_lote}.csv')
@@ -410,19 +285,6 @@ def generar_estudio(distribution_dir: str = None):
         resumen_general = os.path.join(salida, 'resumen_general.csv')
         df_completo.to_csv(resumen_general, index=False)
         print(f'Resumen general guardado en {resumen_general}')
-
-    if descartadas_totales:
-        df_descartadas_general = pd.DataFrame(descartadas_totales)
-        cols_deseadas = ['lote', 'document_id', 'metrica', 'valor', 'umbral_inferior', 'umbral_superior', 'motivo']
-        cols = [c for c in cols_deseadas if c in df_descartadas_general.columns] + [c for c in df_descartadas_general.columns if c not in cols_deseadas]
-        df_descartadas_general = df_descartadas_general[cols]
-
-        ruta_descartadas_gen = os.path.join(salida, 'analiticas_descartadas_iqr_general.csv')
-        df_descartadas_general.to_csv(ruta_descartadas_gen, index=False)
-        print(f'Resumen general de analíticas descartadas por IQR guardado en {ruta_descartadas_gen}')
-
-    if tokens_por_lote:
-        crear_plot_comparacion_tokens(tokens_por_lote, salida)
 
 
 if __name__ == '__main__':
