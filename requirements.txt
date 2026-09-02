@@ -10,7 +10,12 @@ ollama>=0.1.6
 
 streamlit>=1.30.0
 requests>=2.31.0
+qrcode>=7.4.0
 
+# Evaluación (src/test/): LLM-as-a-Judge con Gemini y configuración vía .env
+
+python-dotenv>=1.0.0
+google-genai>=1.0.0
 
 # Análisis de Datos (Notebooks)
 
@@ -29,3 +34,6 @@ torch>=2.0.0
 transformers>=4.30.0
 tqdm>=4.65.0
 ipykernel>=6.25.0
+
+# Tests
+pytest>=7.4.0
