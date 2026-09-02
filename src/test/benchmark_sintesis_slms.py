@@ -35,14 +35,22 @@ URL_SYNTHESIZE = f"{BACKEND_URL}/api/v1/synthesize"
 # hiperparámetros): mantiene el coste acotado y la selección reproducible.
 SUBSET_EXPLORATORIO = [f"Analitica{i}" for i in range(1, 9)]
 
-# model_key -> metodología óptima elegida tras la exploración manual
-# (qwen3.5-4B: CoT+FS contamina el grado CTCAE copiándolo del ejemplo few-shot —
-# p. ej. reporta "Grado 3" para una neutropenia que es Grado 4 — así que se usa CoT sin ejemplos)
+# model_key -> metodología óptima, elegida con el barrido de la Fase A (sweep_metodologias
+# sobre SUBSET_EXPLORATORIO + juicio Gemini PDQI-9, ver output/sweep_metodologias_agregado.csv):
+#   qwen2.5-7B:      CoT+FS   media=4.17 (Few-Shot=4.11, Zero-Shot=3.62, CoT=3.61)
+#   gemma4-nano-e2b: CoT      media=3.77 (CoT+FS=3.78 prácticamente empatada, se mantiene CoT
+#                    por ser más rápida sin ejemplos few-shot — diferencia dentro del ruido con n=8)
+#   qwen3-0.6B:      CoT+FS   media=3.11 (peor de las 4 en todas las estrategias: 25-50% de
+#                    error de seguridad grave/contradicciones incluso en la ganadora)
+#   qwen3.5-4B:      Zero-Shot media=4.36 — cambia respecto a la elección manual anterior (CoT,
+#                    3.70): con menos instrucciones (sin las 5 reglas de CoT) rinde mejor, y
+#                    de paso evita la contaminación de grado CTCAE que CoT+FS mostraba (copiaba
+#                    "Grado 3" del ejemplo few-shot para una neutropenia que era Grado 4).
 CONFIG_OPTIMA = {
     "qwen2.5-7B": "CoT+FS",
     "gemma4-nano-e2b": "CoT",
     "qwen3-0.6B": "CoT+FS",
-    "qwen3.5-4B": "CoT",
+    "qwen3.5-4B": "Zero-Shot",
 }
 
 
