@@ -2,7 +2,6 @@ from typing import Dict, Any
 from datetime import datetime
 
 import pandas as pd
-from typing import Dict, Any
 
 def ner_to_dataframe(datos_estructurados: Dict[str, Any]) -> pd.DataFrame:
     """

@@ -1,6 +1,5 @@
-import re
 import logging
-from typing import Dict, Any, Optional
+from typing import Dict, Any
 
 # Importamos los diccionarios de patrones y reglas 
 from .patterns import PATRONES, REGLAS_CTCAE
