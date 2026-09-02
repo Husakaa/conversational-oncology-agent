@@ -4,7 +4,7 @@ from typing import Dict, Any, Optional
 class ExtractRequest(BaseModel):
     """Esquema de validación para el motor de extracción."""
     texto_clinico: str = Field(
-        ..., 
+        ...,
         description="Texto bruto de la analítica de laboratorio."
     )
 
@@ -13,8 +13,16 @@ class SynthesisRequest(BaseModel):
     texto_clinico: Optional[str] = None
     datos_estructurados: Optional[Dict[str, Any]] = None
     metodologia_prompt: str = Field(
-        default="CoT", 
+        default="CoT",
         description="Estrategia de inferencia: 'Zero-Shot', 'Few-Shot' o 'CoT'."
+    )
+    model_key: Optional[str] = Field(
+        default=None,
+        description="[Herramientas de desarrollador, requiere DEV_MODE] Clave de OLLAMA_MODELS a usar en vez del modelo por defecto."
+    )
+    hyperparams: Optional[Dict[str, Any]] = Field(
+        default=None,
+        description="[Herramientas de desarrollador, requiere DEV_MODE] Overrides puntuales de las opciones de inferencia (temperature, top_k, top_p, num_ctx, num_predict, repeat_penalty...)."
     )
 
 class ExtractResponse(BaseModel):
@@ -31,7 +39,26 @@ class SynthesisResponse(BaseModel):
 class ConsultRequest(BaseModel):
     """Esquema de validación para consulta a Ollama"""
     consulta: str
+    metodologia_prompt: str = Field(
+        default="CoT+FS",
+        description="Estrategia de inferencia: 'Zero-Shot', 'Few-Shot', 'CoT' o 'CoT+FS'."
+    )
+    model_key: Optional[str] = Field(
+        default=None,
+        description="[Herramientas de desarrollador, requiere DEV_MODE] Clave de OLLAMA_MODELS a usar en vez del modelo por defecto."
+    )
+    hyperparams: Optional[Dict[str, Any]] = Field(
+        default=None,
+        description="[Herramientas de desarrollador, requiere DEV_MODE] Overrides puntuales de las opciones de inferencia."
+    )
 
 class ConsultResponse(BaseModel):
     """Esquema de respuesta para respuesta de Ollama"""
     respuesta: str
+
+class DevOptionsResponse(BaseModel):
+    """Esquema de respuesta para las opciones de desarrollador (solo con DEV_MODE activo)."""
+    dev_mode: bool
+    models: list[str]
+    methodologies: list[str]
+    default_hyperparams: Dict[str, Dict[str, Any]]

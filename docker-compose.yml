@@ -8,6 +8,10 @@ services:
       - "8000:8000"
     environment:
       - OLLAMA_HOST=http://ollama:11434
+      # Herramientas de desarrollador (selección de SLM, metodología de
+      # prompting e hiperparámetros en tiempo de ejecución). Poner a "true"
+      # solo en desarrollo; en producción debe quedar en "false".
+      - DEV_MODE=${DEV_MODE:-false}
     depends_on:
       - ollama
     networks:
@@ -22,6 +26,7 @@ services:
       - "8501:8501"
     environment:
       - BACKEND_URL=http://backend:8000
+      - DEV_MODE=${DEV_MODE:-false}
     depends_on:
       - backend
     networks:

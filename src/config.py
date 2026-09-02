@@ -1,9 +1,21 @@
+import os
+
+# Activa las herramientas de desarrollador (selección de SLM, metodología de
+# prompting e hiperparámetros en tiempo de ejecución) en el frontend y en la
+# API. Desactivado (default) en producción: basta con no definir la variable
+# de entorno o ponerla a "false".
+DEV_MODE = os.getenv("DEV_MODE", "false").lower() == "true"
+
 OLLAMA_MODELS = {
     "qwen2.5-7B": "qwen2.5-7B",
     "qwen3-0.6B": "qwen3-0.6B",
     "gemma4-nano-e2b": "gemma4-nano-e2b",
+    "qwen3.5-4B": "qwen3.5-4B",
     "biomistral-7B": "biomistral-7B"
 }
+
+# Metodologías de prompting soportadas por los prompts de src/config.py::MODEL_PROMPTS
+METODOLOGIAS_PROMPT = ["Zero-Shot", "Few-Shot", "CoT", "CoT+FS"]
 
 QWEN25_OPTIONS = {
     "temperature": 0.3,
@@ -47,6 +59,19 @@ BIOMISTRAL_OPTIONS = {
     "num_ctx": 2048,
     "num_predict": 512
 }
+
+# Opciones de inferencia por defecto de cada modelo, indexadas por model_key
+# (la misma clave que OLLAMA_MODELS). Usado por LLMService para resolver los
+# hiperparámetros de una petición y por el endpoint /dev/options para
+# exponerlos al frontend como valores de partida editables.
+MODEL_OPTIONS_MAP = {
+    "qwen2.5-7B": QWEN25_OPTIONS,
+    "qwen3-0.6B": QWEN3_OPTIONS,
+    "gemma4-nano-e2b": GEMMA4_OPTIONS,
+    "qwen3.5-4B": QWEN35_OPTIONS,
+    "biomistral-7B": BIOMISTRAL_OPTIONS
+}
+
 # ── Ejemplo Few-Shot 1: Perfil hepatobiliar (colestasis) ──
 EJEMPLO_FS_1_INPUT = """[Fecha no especificada]: Hb: 14.5 | Plaquetas: 147 | Neutrófilos: 3.41 | Creatinina: 0.50 | GGT: 297 | ALT: 83 | resto bien.
 
