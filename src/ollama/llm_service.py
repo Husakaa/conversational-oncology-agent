@@ -3,7 +3,7 @@ from typing import Dict, Any, Optional, Tuple
 import ollama
 
 from src.ui.formatters import clinical_context, biomarkers_to_markdown
-from src.config import OLLAMA_MODELS, QWEN35_OPTIONS, MODEL_OPTIONS_MAP, MODEL_PROMPTS, THINKING_MODELS, THINK_BY_METHOD
+from src.config import OLLAMA_MODELS, QWEN35_OPTIONS, MODEL_OPTIONS_MAP, MODEL_PROMPTS, THINKING_MODELS, THINK_BY_METHOD, CONSULT_METHODOLOGY_MODELS
 
 # Configuración básica de logging
 logging.basicConfig(level=logging.INFO, format='%(levelname)s: %(message)s')
@@ -35,7 +35,13 @@ class LLMService:
     def _build_prompt(self, model_id: str, methodology: str, context: str, consult: bool = False) -> str:
         model_prompts = MODEL_PROMPTS.get(model_id, MODEL_PROMPTS["default"])
         if consult:
-            prompt_template = model_prompts.get("consult", MODEL_PROMPTS["default"]["consult"])
+            # biomistral-7B define su plantilla de consulta por metodología (ver
+            # CONSULT_METHODOLOGY_MODELS); el resto usa siempre la "consult" genérica, aunque
+            # su propio dict tenga claves Zero-Shot/CoT/... — esas son de síntesis, no de consulta.
+            if model_id in CONSULT_METHODOLOGY_MODELS and methodology in model_prompts:
+                prompt_template = model_prompts[methodology]
+            else:
+                prompt_template = model_prompts.get("consult", MODEL_PROMPTS["default"]["consult"])
             context_block = ""
             if self.last_biomarkers:
                 context_block = f"\n\nRESULTADOS DE LABORATORIO DEL PACIENTE ACTUAL:\n{self.last_biomarkers}\n"

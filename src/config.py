@@ -379,3 +379,13 @@ THINK_BY_METHOD = {
     "qwen3-0.6B": {"Zero-Shot": False, "Few-Shot": False, "CoT": True, "CoT+FS": True},
     "qwen3.5-4B": {"Zero-Shot": False, "Few-Shot": False, "CoT": False, "CoT+FS": False}
 }
+
+# ── Plantillas de consulta por metodología ──
+# MODEL_PROMPTS["default"]["consult"] es la plantilla de consulta genérica: LLMService._build_prompt
+# la usa para /consult salvo que el modelo tenga la SUYA propia. biomistral-7B (el único modelo de
+# consulta) define esa plantilla por metodología (Zero-Shot/Few-Shot/CoT/CoT+FS, con {context_block})
+# en vez de una única clave "consult" — así el usuario puede elegir metodología también en /consult.
+# CONSULT_METHODOLOGY_MODELS marca qué model_key debe resolverse así; el resto de modelos (cuyas
+# claves Zero-Shot/CoT/... son de SÍNTESIS, con un formato de placeholders distinto) siguen usando
+# siempre la plantilla "consult" genérica si se les pide una consulta.
+CONSULT_METHODOLOGY_MODELS = {"biomistral-7B"}
