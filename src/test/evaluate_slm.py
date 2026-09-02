@@ -42,6 +42,34 @@ PREGUNTAS_BIOMISTRAL = [
     "Explica el concepto de resistencia adquirida en terapias contra EGFR."
 ]
 
+PREGUNTAS_BIOMISTRAL_LOTE2 = [
+    "¿Qué implicaciones tiene una elevación de CA 19-9 en un paciente asintomático con antecedentes de pancreatitis?",
+    "Describe la utilidad clínica del marcador CEA en el seguimiento del cáncer colorrectal.",
+    "¿Cómo diferenciarías una neutropenia por toxicidad farmacológica de una por infiltración de médula ósea?",
+    "Explica las pautas de manejo para una neutropenia febril de bajo riesgo (índice MASCC >= 21).",
+    "¿Qué impacto tiene la insuficiencia renal crónica en la eliminación de capecitabina?",
+    "Describe los principales factores de riesgo para desarrollar cardiotoxicidad por trastuzumab.",
+    "¿Cuál es el significado pronóstico de la amplificación de HER2 en cáncer gástrico?",
+    "Explica cómo se maneja la toxicidad cutánea secundaria a inhibidores de EGFR (ej. cetuximab).",
+    "¿Qué relación existe entre los inhibidores de la bomba de protones y la eficacia de fármacos orales como erlotinib?",
+    "Define la neuropatía inducida por oxaliplatino y sus principales características clínicas.",
+    "¿Por qué se utiliza el mesna junto con ifosfamida y dosis altas de ciclofosfamida?",
+    "Explica el riesgo de osteonecrosis maxilar asociado a bisfosfonatos y denosumab.",
+    "¿Cuáles son los signos clínicos tempranos de compresión medular maligna?",
+    "Describe el manejo inicial de un síndrome de vena cava superior en cáncer de pulmón.",
+    "¿Qué utilidad tiene la determinación de PD-L1 mediante TPS y CPS en cáncer de pulmón no microcítico?",
+    "Explica la fisiopatología y el manejo del síndrome de liberación de citoquinas asociado a terapias CAR-T.",
+    "¿Cómo afecta el aclaramiento de creatinina a la administración de pamidronato en mieloma múltiple?",
+    "¿Qué medidas profilácticas se indican para prevenir la reactivación del virus de la hepatitis B en pacientes oncológicos tratados con rituximab?",
+    "Describe la clasificación de grados de toxicidad gastrointestinal (diarrea) según CTCAE.",
+    "¿Cuál es el algoritmo diagnóstico inicial frente a una masa mediastínica anterior?",
+    "Explica el significado de una mutación BRCA1/2 en relación con la respuesta a los inhibidores de PARP.",
+    "¿Qué relación patogénica existe entre el virus del papiloma humano (VPH) y el carcinoma de células escamosas de orofaringe?",
+    "Describe las precauciones necesarias para la administración concomitante de warfarina y fluorouracilo.",
+    "¿Qué factores determinan la elección entre quimioterapia neoadyuvante y adyuvante en cáncer de mama precoz?",
+    "Explica las implicaciones del síndrome de secreción inadecuada de hormona antidiurética (SIADH) asociado a tumores pulmonares microcíticos."
+]
+
 def forzar_descarga_vram(nombre_modelo):
     print(f"\nVaciando {nombre_modelo} de la VRAM...")
     try:
