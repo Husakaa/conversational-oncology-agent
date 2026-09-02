@@ -12,3 +12,7 @@ venv/
 .vscode/
 .idea/
 output/
+analiticas/
+resultados_tfg/
+src/test/
+*.md

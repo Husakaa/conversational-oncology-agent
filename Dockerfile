@@ -14,8 +14,9 @@ RUN apt-get update && apt-get install -y \
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copia todo el código del proyecto
-COPY . .
+# Copia únicamente el código de la aplicación web
+COPY src/ ./src/
+COPY app.py .
 
 # Exponer los puertos usados por la aplicación (FastAPI y Streamlit)
 EXPOSE 8000
