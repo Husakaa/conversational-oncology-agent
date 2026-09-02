@@ -15,6 +15,10 @@ plt.rcParams.update({'font.size': 12, 'figure.autolayout': True})
 def generar_grafica_latencias(df):
     print("Generando análisis de Latencias (Boxplot + Stripplot)...")
     
+    # Omitir la primera iteración (carga en VRAM)
+    if len(df) > 1:
+        df = df.iloc[1:].copy()
+    
     # Preparar datos para Seaborn 
     df_melted = pd.melt(df, value_vars=['latencia_qwen', 'latencia_bio'], 
                         var_name='Modelo', value_name='Latencia (s)')

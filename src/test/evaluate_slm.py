@@ -114,6 +114,14 @@ def ejecutar_bateria_secuencial(df_analiticas):
 
     df_latencias = pd.DataFrame(lista_resultados)[["iteracion", "latencia_qwen", "latencia_bio"]]
     df_latencias.to_csv("output/latencias_secuenciales.csv", index=False)
+    
+    # Calcular promedios omitiendo la primera iteración
+    if len(df_latencias) > 1:
+        avg_qwen = df_latencias["latencia_qwen"][1:].mean()
+        avg_bio = df_latencias["latencia_bio"][1:].mean()
+        print(f"\n[Promedios de Latencia (omitiendo la primera iteración - carga VRAM)]")
+        print(f"Qwen2.5-7B   : {avg_qwen:.2f}s")
+        print(f"Biomistral-7B: {avg_bio:.2f}s")
 
     print("\nProceso finalizado. Datos en carpeta output/")
 
