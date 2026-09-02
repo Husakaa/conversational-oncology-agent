@@ -117,70 +117,47 @@ EJEMPLO_FS_3_OUTPUT = """SECCIÓN D: SÍNTESIS CLÍNICA Y EVOLUCIÓN 📊
 
 Se identifica un deterioro de la función renal con creatinina en Grado 2, acompañado de hiponatremia moderada (Grado 2) e hiperpotasemia leve (Grado 1), junto a elevación de urea. Este conjunto de alteraciones electrolíticas y de retención nitrogenada configura un patrón compatible con nefrotoxicidad inducida por tratamiento. Las series hematológicas y la función hepática no presentan alteraciones. Es prioritario asegurar una hidratación adecuada, monitorizar la evolución de la función renal y electrolitos en 48-72 horas, y considerar ajuste o suspensión temporal de fármacos nefrotóxicos."""
 
+# ── Ejemplo compacto para qwen3-0.6B: prosa breve, sin encabezados, hallazgos ya priorizados ──
+# (reutiliza el caso de mielotoxicidad de EJEMPLO_FS_2, pero con salida en 2 frases y sin "SECCIÓN D")
+EJEMPLO_QWEN3_INPUT = EJEMPLO_FS_2_INPUT
+EJEMPLO_QWEN3_OUTPUT = """Se observa neutropenia grave (Grado 3) como hallazgo predominante, junto a trombocitopenia moderada (Grado 2) y anemia leve (Grado 1), compatible con mielotoxicidad por quimioterapia. La función hepática y renal se mantienen sin alteraciones."""
+
 MODEL_PROMPTS = {
+    # qwen3-0.6B es un modelo de razonamiento (canal "thinking" nativo en Ollama) de solo 0.6B.
+    # El grueso de las reglas (formato prosa, prohibido inventar datos, orden de gravedad) vive en
+    # el SYSTEM del Modelfile (~/AI_Models/Qwen3_0.6B/Modelfile): el usuario aquí solo aporta la
+    # tarea concreta, ya que sobrecargarlo con instrucciones repetidas empeora su cumplimiento.
+    # El eje Zero-Shot/Few-Shot vs CoT/CoT+FS controla si se activa su "thinking" nativo
+    # (ver THINK_BY_METHOD más abajo) en vez de instruirlo por texto a "razonar paso a paso".
     "qwen3-0.6B": {
-        "Zero-Shot": """Basado en estos resultados, devuelve el análisis estrictamente en este formato JSON:
-{{
-  "hallazgo_limitante": "Nombre del biomarcador",
-  "grado_hallazgo": "Número del grado",
-  "otras_alteraciones": ["biomarcador 1", "biomarcador 2"],
-  "plan_sugerido": "Acción breve de 5 palabras"
-}}
-RESULTADOS:
+        "Zero-Shot": """Redacta la síntesis de estos hallazgos (ya ordenados de mayor a menor gravedad):
 {context}""",
-        "Few-Shot": """Eres un oncólogo experto. Analiza los resultados y devuelve el análisis estrictamente en este formato JSON:
-{{
-  "hallazgo_limitante": "Nombre del biomarcador",
-  "grado_hallazgo": "Número del grado",
-  "otras_alteraciones": ["biomarcador 1", "biomarcador 2"],
-  "plan_sugerido": "Acción breve de 5 palabras"
-}}
-EJEMPLO INPUT:
-""" + EJEMPLO_FS_1_INPUT + """
-EJEMPLO OUTPUT:
-{{
-  "hallazgo_limitante": "GGT",
-  "grado_hallazgo": "2",
-  "otras_alteraciones": ["ALT", "FA", "AST"],
-  "plan_sugerido": "Monitorizar en próximo ciclo"
-}}
-TAREA ACTUAL:
-INPUT:
+        "Few-Shot": """Sigue el estilo del ejemplo (prosa breve, sin encabezados, sin viñetas).
+
+EJEMPLO
+HALLAZGOS:
+""" + EJEMPLO_QWEN3_INPUT + """
+SÍNTESIS:
+""" + EJEMPLO_QWEN3_OUTPUT + """
+
+TAREA ACTUAL
+HALLAZGOS:
 {context}
-OUTPUT:""",
-        "CoT": """Eres un oncólogo clínico experto. Analiza la fisiopatología conjunta de las toxicidades detectadas.
-Basado exclusivamente en los resultados de laboratorio proporcionados, devuelve el análisis estrictamente en este formato JSON:
-{{
-  "hallazgo_limitante": "Nombre del biomarcador limitante",
-  "grado_hallazgo": "Número del grado",
-  "otras_alteraciones": ["biomarcador 1", "biomarcador 2"],
-  "plan_sugerido": "Acción breve de 5 palabras"
-}}
-NO inventes datos.
-DATOS DEL PACIENTE:
+SÍNTESIS:""",
+        "CoT": """Redacta la síntesis de estos hallazgos (ya ordenados de mayor a menor gravedad):
 {context}""",
-        "CoT+FS": """Eres un oncólogo clínico experto. Analiza la fisiopatología de las toxicidades detectadas.
-Devuelve el análisis estrictamente en este formato JSON:
-{{
-  "hallazgo_limitante": "Nombre del biomarcador",
-  "grado_hallazgo": "Número del grado",
-  "otras_alteraciones": ["biomarcador 1", "biomarcador 2"],
-  "plan_sugerido": "Acción breve de 5 palabras"
-}}
-EJEMPLO DE REFERENCIA:
-INPUT:
-""" + EJEMPLO_FS_1_INPUT + """
-OUTPUT:
-{{
-  "hallazgo_limitante": "GGT",
-  "grado_hallazgo": "2",
-  "otras_alteraciones": ["ALT", "FA", "AST"],
-  "plan_sugerido": "Monitorizar en próximo ciclo"
-}}
-TAREA ACTUAL:
-INPUT:
+        "CoT+FS": """Sigue el estilo del ejemplo (prosa breve, sin encabezados, sin viñetas).
+
+EJEMPLO
+HALLAZGOS:
+""" + EJEMPLO_QWEN3_INPUT + """
+SÍNTESIS:
+""" + EJEMPLO_QWEN3_OUTPUT + """
+
+TAREA ACTUAL
+HALLAZGOS:
 {context}
-OUTPUT:"""
+SÍNTESIS:"""
     },
     "biomistral-7B": {
         "Zero-Shot": """Por favor, actúa de acuerdo a tu rol de Facultativo Especialista Senior para responder la consulta del usuario basándote EXCLUSIVAMENTE en los siguientes datos extraídos.{context_block}
@@ -238,6 +215,79 @@ CONSULTA DEL USUARIO:
 {context}
 
 INSTRUCCIÓN FINAL: Ejecuta tu cadena de razonamiento paso a paso dentro de <razonamiento>, identificando valores de referencia, grado CTCAE si aplica y diagnóstico diferencial. Luego, proporciona tu respuesta clínica en <respuesta>."""
+    },
+    # gemma4-nano-e2b: modelo de razonamiento (canal "thinking" nativo). Con el prompt "default"
+    # (qwen2.5-7B) alucinaba el sexo del paciente ("la paciente") pese a la regla explícita, y
+    # confundía terminología (p. ej. "leucopenia" en vez de "neutropenia") — se refuerza aquí la
+    # fidelidad a los datos y la terminología exacta, además de en el SYSTEM del Modelfile.
+    "gemma4-nano-e2b": {
+        "Zero-Shot": """Basado en estos resultados, redacta únicamente la 'SECCIÓN D: SÍNTESIS CLÍNICA 📊'.
+EXTENSIÓN: Máximo un párrafo de 4-6 frases. Sé conciso y directo.
+No menciones el sexo del paciente ("el/la paciente"): no lo conoces. Usa el nombre clínico exacto de cada hallazgo, tal cual aparece en los datos.
+RESULTADOS:
+{context}
+SECCIÓN D:""",
+        "Few-Shot": """Eres un oncólogo experto. Sigue el estilo del ejemplo para redactar la 'SECCIÓN D: SÍNTESIS CLÍNICA 📊'.
+EXTENSIÓN OBLIGATORIA: Un solo párrafo de máximo 4-6 frases. No te extiendas más.
+No menciones el sexo del paciente ("el/la paciente"): no lo conoces. Usa el nombre clínico exacto de cada hallazgo, tal cual aparece en los datos.
+EJEMPLO:
+INPUT:
+""" + EJEMPLO_FS_1_INPUT + """
+OUTPUT SECCIÓN D:
+""" + EJEMPLO_FS_1_OUTPUT + """
+TAREA ACTUAL:
+INPUT:
+{context}
+OUTPUT SECCIÓN D:""",
+        "CoT": """Eres un oncólogo clínico experto redactando la evolución en una historia clínica.
+Analiza la fisiopatología conjunta de las toxicidades detectadas y redacta una síntesis clínica profesional.
+
+REGLAS ESTRICTAS DE FORMATO:
+    1. NO inventes NINGÚN dato del paciente (ni edad, ni sexo, ni diagnóstico, ni tratamientos previos). No sabes quién es: nunca escribas "el paciente" ni "la paciente", refiérete directamente a los hallazgos.
+    2. Básate EXCLUSIVAMENTE en los resultados de laboratorio proporcionados. Usa el nombre clínico EXACTO de cada hallazgo tal como aparece en los datos (no sustituyas un término por otro parecido).
+    3. NO uses viñetas, ni palabras como "Paso 1", "Paso 2", "Análisis individual" o "Conclusión".
+    4. Escribe un único texto narrativo (prosa médica) conectando los hallazgos de forma lógica.
+    5. EXTENSIÓN: Un solo párrafo conciso de máximo 4-6 frases. No te extiendas innecesariamente.
+
+DATOS DEL PACIENTE:
+{context}""",
+        "CoT+FS": """Eres un oncólogo clínico experto. Tu tarea es analizar la fisiopatología conjunta de las toxicidades y redactar una síntesis profesional.
+
+A continuación se muestran TRES EJEMPLOS DE REFERENCIA para que aprendas el tono y la estructura. Observa que cada ejemplo comienza de forma distinta:
+
+--- EJEMPLO 1 ---
+INPUT:
+""" + EJEMPLO_FS_1_INPUT + """
+OUTPUT:
+""" + EJEMPLO_FS_1_OUTPUT + """
+
+--- EJEMPLO 2 ---
+INPUT:
+""" + EJEMPLO_FS_2_INPUT + """
+OUTPUT:
+""" + EJEMPLO_FS_2_OUTPUT + """
+
+--- EJEMPLO 3 ---
+INPUT:
+""" + EJEMPLO_FS_3_INPUT + """
+OUTPUT:
+""" + EJEMPLO_FS_3_OUTPUT + """
+
+REGLAS ESTRICTAS DE SEGURIDAD Y FORMATO:
+1. NO inventes ningún dato (edad, sexo, diagnóstico o fármacos). Si no está en el INPUT, no existe. Nunca escribas "el paciente" ni "la paciente".
+2. Usa el nombre clínico EXACTO de cada hallazgo tal como aparece en el INPUT (no lo sustituyas por un término parecido).
+3. NO incluyas el proceso de pensamiento ("Paso 1", "Paso 2") en la respuesta final.
+4. Escribe un texto único en prosa médica, sin viñetas ni etiquetas de sección internas.
+5. Usa un tono analítico, conectando cómo una alteración puede influir en otra.
+6. INDEPENDENCIA DE LOS EJEMPLOS: Usa los ejemplos solo para aprender el tono y la estructura, NO para copiar contenido.
+7. NO copies frases textuales de los ejemplos. Cada informe debe tener su propio inicio y redacción original adaptada a los datos reales del paciente.
+8. EXTENSIÓN: Un solo párrafo conciso de máximo 4-6 frases. Observa la brevedad de los ejemplos.
+
+TAREA ACTUAL:
+INPUT:
+{context}
+
+INSTRUCCIÓN FINAL: Redacta ahora el informe en un solo párrafo breve, con un inicio original y adaptado a los datos proporcionados."""
     },
     "default": {
         "consult": """Eres un oncólogo experto. Tienes un alto dominio del ámbito médico.
@@ -309,4 +359,23 @@ INPUT:
 
 INSTRUCCIÓN FINAL: Redacta ahora el informe en un solo párrafo breve, con un inicio original y adaptado a los datos proporcionados."""
     }
+}
+
+# ── Canal de razonamiento ("thinking") de Ollama ──
+# qwen3-0.6B y gemma4-nano-e2b son modelos de razonamiento: Ollama devuelve su cadena de
+# pensamiento en un campo `thinking` separado de `content`. Si no se controla, el modelo puede
+# agotar todo `num_predict` pensando y devolver `content` vacío. THINKING_MODELS marca qué
+# model_key necesita que LLMService pase explícitamente el parámetro `think` a ollama.chat().
+THINKING_MODELS = {"qwen3-0.6B", "gemma4-nano-e2b", "qwen3.5-4B"}
+
+# Para qwen3-0.6B, el eje Zero-Shot/Few-Shot vs CoT/CoT+FS se mapea a activar o no su
+# "thinking" nativo (en vez de instruirlo por texto a "razonar paso a paso", que no es fiable a
+# este tamaño): Zero-Shot/Few-Shot = respuesta directa (más rápida); CoT/CoT+FS = con
+# razonamiento previo (más lenta, más precisa). Un model_key sin entrada aquí pero presente en
+# THINKING_MODELS usa razonamiento activado siempre (gemma4-nano-e2b).
+# qwen3.5-4B: con think=True tarda >200s Y AÚN ASÍ agota num_predict pensando sin dejar
+# contenido (mismo fallo de truncación, mucho más severo). Se desactiva siempre.
+THINK_BY_METHOD = {
+    "qwen3-0.6B": {"Zero-Shot": False, "Few-Shot": False, "CoT": True, "CoT+FS": True},
+    "qwen3.5-4B": {"Zero-Shot": False, "Few-Shot": False, "CoT": False, "CoT+FS": False}
 }
