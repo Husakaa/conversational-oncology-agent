@@ -183,31 +183,35 @@ INPUT:
 OUTPUT:"""
     },
     "biomistral-7B": {
-        "consult": """Por favor, actúa de acuerdo a tu rol de Facultativo Especialista Senior para responder la consulta del usuario basándote EXCLUSIVAMENTE en los siguientes datos extraídos.{context_block}
+        "Zero-Shot": """Por favor, actúa de acuerdo a tu rol de Facultativo Especialista Senior para responder la consulta del usuario basándote EXCLUSIVAMENTE en los siguientes datos extraídos.{context_block}
 
 CONSULTA DEL USUARIO:
 {context}
 
-Recuerda procesar la información ejecutando tu cadena de pensamiento dentro de la etiqueta <razonamiento> y proporcionando tu conclusión/respuesta directamente en la etiqueta <respuesta>.""",
+INSTRUCCIÓN FINAL: Responde de forma directa, concisa y clínicamente precisa. NO proporciones tu cadena de razonamiento paso a paso, sólo la respuesta final.""",
         "Few-Shot": """Por favor, actúa de acuerdo a tu rol de Facultativo Especialista Senior para responder la consulta del usuario basándote EXCLUSIVAMENTE en los siguientes datos extraídos.{context_block}
 
-A continuación se muestra un EJEMPLO del estilo de respuesta que se espera de ti ante preguntas breves sobre patologías o valores de marcadores:
+A continuación se muestra un EJEMPLO del estilo de respuesta que se espera de ti (directa y sin cadena de razonamiento):
 
 EJEMPLO DE CONSULTA:
 "¿Qué significa una GGT de 297 U/L en un paciente oncológico?"
 
 EJEMPLO DE RESPUESTA IDEAL:
-<razonamiento>
-La GGT (gamma-glutamil transferasa) tiene un rango de referencia de 5-40 U/L. Un valor de 297 U/L supone una elevación de aproximadamente 7 veces el límite superior de la normalidad. Según la escala CTCAE v5.0, esto se clasifica como Grado 2 (>3-5× LSN corresponde a G2 si tomamos el LSN estándar de 40 U/L, aunque 297/40 ≈ 7.4× podría considerarse G3 dependiendo del laboratorio). La GGT es un marcador sensible pero poco específico de daño hepatobiliar. En contexto oncológico, su elevación puede deberse a hepatotoxicidad farmacológica (quimioterapia, inmunoterapia), progresión metastásica hepática o colestasis inducida por fármacos.
-</razonamiento>
-<respuesta>
 Una GGT de 297 U/L representa una elevación significativa (aproximadamente 7× el límite superior normal), clasificable como toxicidad Grado 2-3 según CTCAE v5.0. En paciente oncológico, las causas más frecuentes incluyen hepatotoxicidad farmacológica y colestasis. Se recomienda correlacionar con otros marcadores hepáticos (FA, ALT, AST, bilirrubina) para determinar el patrón de daño (colestásico vs. hepatocelular) y valorar ajuste de tratamiento si procede.
-</respuesta>
 
 CONSULTA DEL USUARIO:
 {context}
 
-Recuerda procesar la información ejecutando tu cadena de pensamiento dentro de la etiqueta <razonamiento> y proporcionando tu conclusión/respuesta directamente en la etiqueta <respuesta>.""",
+INSTRUCCIÓN FINAL: Responde de forma directa, concisa y clínicamente precisa siguiendo el estilo del ejemplo. NO proporciones tu cadena de razonamiento paso a paso, sólo la respuesta final.""",
+        "CoT": """Por favor, actúa de acuerdo a tu rol de Facultativo Especialista Senior para responder la consulta del usuario basándote EXCLUSIVAMENTE en los siguientes datos extraídos.{context_block}
+
+INSTRUCCIONES DE RAZONAMIENTO:
+Antes de responder, analiza paso a paso la fisiopatología relevante, los valores de referencia implicados y las posibles causas diferenciales en contexto oncológico. Después, proporciona una respuesta concisa y clínicamente precisa.
+
+CONSULTA DEL USUARIO:
+{context}
+
+INSTRUCCIÓN FINAL: Ejecuta tu cadena de razonamiento paso a paso dentro de la etiqueta <razonamiento>, identificando valores de referencia, grado CTCAE si aplica y diagnóstico diferencial. Luego, proporciona tu respuesta clínica en la etiqueta <respuesta>.""",
         "CoT+FS": """Por favor, actúa de acuerdo a tu rol de Facultativo Especialista Senior para responder la consulta del usuario basándote EXCLUSIVAMENTE en los siguientes datos extraídos.{context_block}
 
 INSTRUCCIONES DE RAZONAMIENTO:
