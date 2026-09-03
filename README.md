@@ -54,6 +54,20 @@ alternar el SLM de síntesis, la metodología de prompting (Zero-Shot / Few-Shot
 CoT+FS) y sus hiperparámetros en tiempo de ejecución, sin tocar código. Desactivado por
 defecto — en producción basta con no definir la variable.
 
+En Docker se activa con `docker-compose.dev.yml`, un override que se aplica encima del
+compose normal:
+
+```bash
+docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d --build
+```
+
+Además de poner `DEV_MODE=true` en ambos servicios, monta `src/` y `app.py` desde el host
+y arranca uvicorn con `--reload` y Streamlit con `--server.runOnSave`, así que los cambios
+de código se recargan solos sin reconstruir la imagen. El arranque de siempre
+(`docker compose up --build`) sigue levantando la configuración de producción con
+`DEV_MODE=false`. Los contenedores tienen nombre fijo, así que conviene bajar la pila
+anterior (`docker compose down`) antes de cambiar de modo.
+
 ## Estructura del proyecto
 
 ```

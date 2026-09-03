@@ -1,0 +1,28 @@
+# Override de desarrollo. No se usa solo: se aplica encima de
+# docker-compose.yml, que es el que define los servicios completos.
+#
+#   docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d --build
+#
+# Activa las herramientas de desarrollador (selección de SLM, metodología de
+# prompting e hiperparámetros en tiempo de ejecución). El arranque normal,
+# "docker compose up -d", sigue levantando la configuración de producción con
+# DEV_MODE=false, sin tocar nada.
+
+services:
+  backend:
+    environment:
+      - DEV_MODE=true
+    # Código montado desde el host y recarga automática: al guardar un fichero
+    # de src/ uvicorn se reinicia solo, sin reconstruir la imagen.
+    volumes:
+      - ./src:/app/src
+      - ./app.py:/app/app.py
+    command: uvicorn src.main:app --host 0.0.0.0 --port 8000 --reload
+
+  frontend:
+    environment:
+      - DEV_MODE=true
+    volumes:
+      - ./src:/app/src
+      - ./app.py:/app/app.py
+    command: streamlit run app.py --server.port 8501 --server.address 0.0.0.0 --server.runOnSave true
