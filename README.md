@@ -1,6 +1,6 @@
 # Agente Conversacional Oncológico
 
-Trabajo de Fin de Grado (Ingeniería de la Salud, UMA). Sistema híbrido de apoyo a la
+Trabajo de Fin de Grado de Ingeniería de la Salud en la Universidad de Málaga. Sistema híbrido de apoyo a la
 decisión clínica en oncología que combina:
 
 1. Un **motor determinista de extracción (NER por regex)** que estructura biomarcadores
@@ -93,11 +93,4 @@ Los demás scripts de `src/test/` (`evaluate_ner_regex.py`, `evaluate_slm.py`,
 ejecutan directamente (`python -m src.test.<script>`) y generan CSVs/JSON/PNGs en
 `output/`, usados para las métricas y gráficas de la memoria del TFG.
 
-Ver [`CLAUDE.md`](CLAUDE.md) para el detalle de la arquitectura interna.
 
-## Notas
-
-- Los corpus de analíticas reales (`analiticas/`) y `output/` están en `.gitignore`:
-  contienen datos clínicos y no se versionan.
-- `.env` contiene una clave de API (Gemini, usada como LLM-as-a-Judge en la evaluación)
-  — nunca se debe commitear.
